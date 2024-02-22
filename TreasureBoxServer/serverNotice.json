@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "noticesCN": [
+    {
+      "title": "测试公告1",
+      "content": "测试公告内容1."
+    },
+    {
+      "title": "测试公告2",
+      "content": "测试公告内容2."
+    }
+  ],
+  "noticesEN": [
+    {
+      "title": "Test title 1",
+      "content": "This's a content 1."
+    },
+    {
+      "title": "Test title 2",
+      "content": "This's a content 2."
+    }
+  ]
+}

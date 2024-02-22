@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "KissServerFramework": {
+      "commandName": "Project",
+      "workingDirectory": "D:\\TreasureBox\\Server\\TreasureBoxServer\\bin\\Debug\\net5.0"
+    }
+  }
+}
