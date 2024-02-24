@@ -1,1 +1,1 @@
-C:\xampp\mysql\bin\mysqladmin -u root -p create kiss
+C:\xampp\mysql\bin\mysqladmin -u root -p create treasurebox

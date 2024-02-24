@@ -1,1 +1,1 @@
-C:\xampp\mysql\bin\mysql kiss < C:/SQL/kiss.sql -u root -p
+C:\xampp\mysql\bin\mysql treasurebox < C:/SQL/treasurebox.sql -u root -p
