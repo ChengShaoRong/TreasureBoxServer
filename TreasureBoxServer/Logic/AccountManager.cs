@@ -105,6 +105,7 @@ namespace TreasureBox
         }
         public void ClearAccountCache(Account account)
         {
+            Logger.LogWarning($"ClearAccountCache : {account}");
             accounts.Remove(account.uid);
             playersByAccount.Remove(account);
             accountsByName.Remove(account.name + "_" + account.acctType);
@@ -138,22 +139,24 @@ namespace TreasureBox
         {
             BroadcastToAllPlayer(msg.ToString());
         }
-
         /// <summary>
         /// Login server.
         /// This step check the third party SDK.
         /// If OK will go to next step.
         /// </summary>
-        /// <param name="jsonData">JSONData from client(name/password/acctType)</param>
+        /// <param name="name">login name</param>
+        /// <param name="acctType">account type</param>
+        /// <param name="password">password</param>
         /// <param name="player">current player</param>
-        public void Login(JSONData jsonData, Player player)
+        public void Login(string name, int acctType, string password, Player player)
         {
             //You may process re login, we send back the account instance to client
-            if (player.account != null && player.account.acctType == jsonData["acctType"])
+            if (player.account != null && player.account.acctType == acctType)
             {
                 Player oldPlayer = GetPlayer(player.account);
                 if (oldPlayer != player)
                 {
+                    oldPlayer.IsReplace = true;
                     oldPlayer.Replace(player);//will disconnect the old player
                     //player = oldPlayer;
                 }
@@ -163,23 +166,20 @@ namespace TreasureBox
                 player.account = account;
                 Logger.LogInfo("Account info still in cache, resend them.");
 
-                jsonData = JSONData.NewPacket(PacketType.CB_AccountLogin);
-                jsonData["account"] = player.account.ToJSONData();
-                player.Send(jsonData);
+                player.CB_AccountLogin(player.account.ToJSONData());
 
                 account.MarkModifyMaskAllSubSystem();
                 account.SyncToClient();
                 return;
             }
 
-            Account.AccountType acctType = (Account.AccountType)(int)jsonData["acctType"];
-            switch (acctType)
+            switch ((Account.AccountType)acctType)
             {
                 case Account.AccountType.BuildIn:
                     {
                         JSONData jsonPost = JSONData.NewDictionary();
-                        jsonPost["uid"] = jsonData["name"];
-                        jsonPost["token"] = jsonData["password"];
+                        jsonPost["uid"] = name;
+                        jsonPost["token"] = password;
                         Framework.Sign(jsonPost);
                         //You can post JSONData or string like below.
                         //string strPost = $"uid={jsonData["name"]}&token={jsonData["password"]}&sign={FrameworkBase.GetMD5((string)jsonData["name"] + jsonData["password"] + "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")}";
@@ -194,12 +194,12 @@ namespace TreasureBox
                                         Logger.LogWarning("player offline, ignore request in Login");
                                         return;
                                     }
-                                    LoginStep2(jsonData, player);
+                                    LoginStep2(name, acctType, password, player);
                                 }
                                 else
                                 {
                                     Logger.LogError($"url={Framework.config.buildInAccountURL} post={jsonPost} callback={callback}");
-                                    player.CallbackError(jsonCallback["error"]);
+                                    player.CB_Error(jsonCallback["error"], true);
                                 }
                             });
                     }
@@ -209,8 +209,8 @@ namespace TreasureBox
                         //Sample of using POST
                         string strURL = $"http://127.0.0.1:{Framework.config.httpServerPort}/TestThirdPartyAccount";
                         JSONData jsonPost = JSONData.NewDictionary();
-                        jsonPost["uid"] = jsonData["name"];
-                        jsonPost["token"] = jsonData["password"];
+                        jsonPost["uid"] = name;
+                        jsonPost["token"] = password;
                         jsonPost["sign"] = FrameworkBase.GetMD5((string)jsonPost["uid"] + jsonPost["token"] + "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
                         //You can post JSONData or string like below.
                         //string strPost = $"uid={jsonData["name"]}&token={jsonData["password"]}&sign={FrameworkBase.GetMD5((string)jsonData["name"] + jsonData["password"] + "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")}";
@@ -225,11 +225,11 @@ namespace TreasureBox
                                         Logger.LogWarning("player offline, ignore request in Login");
                                         return;
                                     }
-                                    LoginStep2(jsonData, player);
+                                    LoginStep2(name, acctType, password, player);
                                 }
                                 else
                                 {
-                                    player.CallbackError($"url={strURL} post={jsonPost} callback={callback}");
+                                    player.CB_Error($"url={strURL} post={jsonPost} callback={callback}", true);
                                 }
                             });
                         /*
@@ -284,7 +284,7 @@ namespace TreasureBox
                     }
                     break;
                 default:
-                    player.CallbackError("Not support acctType:" + jsonData["acctType"]);
+                    player.CB_Error("Not support acctType:" + "acctType", true);
                     return;
             }
         }
@@ -292,60 +292,62 @@ namespace TreasureBox
         /// Select data from Database if not in cache, and insert into database if not exist.
         /// And then go to next step.
         /// </summary>
-        /// <param name="jsonData">JSONData from client(name/password)</param>
+        /// <param name="name">login name</param>
+        /// <param name="acctType">account type</param>
+        /// <param name="password">password</param>
         /// <param name="player">current player</param>
-        void LoginStep2(JSONData jsonData, Player player)
+        void LoginStep2(string name, int acctType, string password, Player player)
         {
-            string name = ThreadPoolMySql.ReplaceInjectString(jsonData["name"]);
-            jsonData["name"] = name;
-            int acctType = jsonData["acctType"];
+            name = ThreadPoolMySql.ReplaceInjectString(name);
             //check the cache
             Account account;
             if (!accountsByName.TryGetValue(name + "_" + acctType, out account))//no cache
             {
-                Account.SelectByNameAndAcctType(jsonData["name"], jsonData["acctType"], (accounts, error) =>
+                Account.SelectByAcctTypeAndName(acctType, name, (accounts, error) =>
                 {
                     //Select account occur error
                     if (!string.IsNullOrEmpty(error))
                     {
-                        player.CallbackError($"Select account occur error : {error}.");
+                        player.CB_Error($"Select account occur error : {error}.", true);
                         return;
                     }
                     //New account if not exist account
                     if (accounts.Count == 0)
                     {
                         DateTime dtNow = DateTime.Now;
-                        Account.Insert(jsonData["acctType"], jsonData["name"], dtNow,
+                        Account.Insert(acctType, name, dtNow,
                             "Guest" + FrameworkBase.GetRand(100000), 1, 0, 0, dtNow, 1, 0, 120, dtNow,0,
                             (newAccount, error) =>
                             {
                                 //select account occur error
                                 if (!string.IsNullOrEmpty(error))
                                 {
-                                    player.CallbackError($"Insert database error : {error}.");
+                                    player.CB_Error($"Insert database error : {error}.", true);
                                     return;
                                 }
                                 //Using the account that just inserted into database
-                                LoginStep3(jsonData, newAccount, player, true);
+                                LoginStep3(name, acctType, password, newAccount, player, true);
                             });
                         return;
                     }
                     //Using the account select from database
-                    LoginStep3(jsonData, accounts[0], player, false);
+                    LoginStep3(name, acctType, password, accounts[0], player, false);
                 });
                 return;
             }
             //Using the account in cache
-            LoginStep3(jsonData, account, player, false);
+            LoginStep3(name, acctType, password, account, player, false);
         }
         /// <summary>
         /// Check account info whether valid, and then send to client.
         /// </summary>
-        /// <param name="jsonData">JSONData from client(name/password)</param>
+        /// <param name="name">login name</param>
+        /// <param name="acctType">account type</param>
+        /// <param name="password">password</param>
         /// <param name="account">the account instance</param>
         /// <param name="player">current player</param>
         /// <param name="bCreate">Whether just was created this account right now</param>
-        void LoginStep3(JSONData jsonData, Account account, Player player, bool bCreate)
+        void LoginStep3(string name, int acctType, string password, Account account, Player player, bool bCreate)
         {
             //cache account
             bool existInCache = GetAccount(ref account);
@@ -354,15 +356,14 @@ namespace TreasureBox
             Player oldPlayer = GetPlayer(account);
             if (oldPlayer != null)
             {
+                oldPlayer.IsReplace = true;
                 oldPlayer.Replace(player);//will disconnect the old player
                 //player = oldPlayer;
             }
             playersByAccount[account] = player;
             player.account = account;
             //callback the account to client immediately
-            JSONData cbAccount = JSONData.NewPacket(PacketType.CB_AccountLogin);
-            cbAccount["account"] = account.ToJSONData();
-            player.Send(cbAccount);
+            player.CB_AccountLogin(account.ToJSONData());
 
             //Log account
             LogManager.LogAccount(account.uid, 0, player.IP);

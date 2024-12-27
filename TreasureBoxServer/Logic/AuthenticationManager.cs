@@ -164,6 +164,10 @@ namespace TreasureBox
                     _param_ = new MySqlParameter("@uid", MySqlDbType.Int32);
                     _param_.Value = uid;
                     _ps_.Add(_param_);
+                    string strLog = "sql=" + _sb_.ToString();
+                    foreach (var one in _ps_)
+                        strLog += $",{one.ParameterName}={one.Value}";
+                    Logger.LogInfo($"AuthenticationManager.Sync: {strLog}");
                     AsyncDatabaseManager.ExecuteSQLInBackgroundThread(_sb_.ToString(), _ps_.ToArray());
                 }
             }

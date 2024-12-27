@@ -177,15 +177,53 @@ namespace TreasureBox
             }
             return true;
         }
+#if FREE_VERSION//We recommend set `appendix` type in NotObject `Mail` as `Dictionary<int, int>` in C#Like, but must set as `string` in C#LikeFree.
         /// <summary>
         /// Send mail to player
         /// </summary>
         /// <param name="title">mail title</param>
         /// <param name="content">mail content</param>
-        /// <param name="appendix">mail appendix, default is empty mean no appendix</param>
+        /// <param name="appendix">multiple item for mail appendix, the key is item id and the value is item count, default value is null</param>
+        /// <param name="senderId">sender uid, default is 0</param>
+        /// <param name="senderName">sender name, default is 'System'</param>
+        public void SendMail(string title, string content, Dictionary<int, int> appendix = null, int senderId = 0, string senderName = "System")
+        {
+            SendMail(title, content, NetObjectUtils.DictionaryToString(appendix), senderId, senderName);
+        }
+        /// <summary>
+        /// Send mail to player
+        /// </summary>
+        /// <param name="title">mail title</param>
+        /// <param name="content">mail content</param>
+        /// <param name="appendix">multiple item for mail appendix, `itemId1,itemId2 itemId2,itemId2...` e.g. string `123,1 234,2` will convert to dictionary `{{123,1},{234,2}}`</param>
         /// <param name="senderId">sender uid, default is 0</param>
         /// <param name="senderName">sender name, default is 'System'</param>
         public void SendMail(string title, string content, string appendix = "", int senderId = 0, string senderName = "System")
+        {
+            //Insert into database
+            Mail.Insert(uid, senderId, senderName, title, content, appendix, DateTime.Now, 0, 0,
+                (mail, error) =>//callback from database
+                {
+                    if (string.IsNullOrEmpty(error))
+                    {
+                        //Sync to client after inserted into database
+                        SetMails(new List<Mail>() { mail });
+                        LogManager.LogMail(uid, 0, NetObjectUtils.StringToDictionary<int, int>(appendix), content, title);//You may don't need log this.
+                    }
+                    else
+                        Logger.LogError(error);
+                });
+        }
+#else
+        /// <summary>
+        /// Send mail to player
+        /// </summary>
+        /// <param name="title">mail title</param>
+        /// <param name="content">mail content</param>
+        /// <param name="appendix">multiple item for mail appendix, the key is item id and the value is item count, default value is null</param>
+        /// <param name="senderId">sender uid, default is 0</param>
+        /// <param name="senderName">sender name, default is 'System'</param>
+        public void SendMail(string title, string content, Dictionary<int, int> appendix = null, int senderId = 0, string senderName = "System")
         {
             //Insert into database
             Mail.Insert(uid, senderId, senderName, title, content, appendix, DateTime.Now, 0, 0,
@@ -201,23 +239,7 @@ namespace TreasureBox
                         Logger.LogError(error);
                 });
         }
-        /// <summary>
-        /// Send mail to player
-        /// </summary>
-        /// <param name="title">mail title</param>
-        /// <param name="content">mail content</param>
-        /// <param name="appendixs">multiple item for mail appendix, the key is item id and the value is item count</param>
-        /// <param name="senderId">sender uid, default is 0</param>
-        /// <param name="senderName">sender name, default is 'System'</param>
-        public void SendMail(string title, string content, Dictionary<int, int> appendixs, int senderId = 0, string senderName = "System")
-        {
-            string appendix = "";
-            foreach(var item in appendixs)
-            {
-                appendix += " " + item.Key + "," + item.Value;
-            }
-            SendMail(title, content, appendix.Trim(), senderId, senderName);
-        }
+#endif
         /// <summary>
         /// Send mail to player
         /// </summary>
@@ -230,9 +252,9 @@ namespace TreasureBox
         public void SendMail(string title, string content, int itemId, int itemCount, int senderId = 0, string senderName = "System")
         {
             if (itemId != 0 && itemCount != 0)
-                SendMail(title, content, itemId + "," + itemCount, senderId, senderName);
+                SendMail(title, content, new Dictionary<int, int>() { { itemId, itemCount } }, senderId, senderName);
             else
-                SendMail(title, content, "", senderId, senderName);
+                SendMail(title, content, new Dictionary<int, int>(), senderId, senderName);
         }
         /// <summary>
         /// Mark mail was read
@@ -254,9 +276,10 @@ namespace TreasureBox
             foreach(int uid in uids)
             {
                 Mail mail = GetMail(uid);
+#if FREE_VERSION//We recommend set `appendix` type in NotObject `Mail` as `Dictionary<int, int>` in C#Like, but must set as `string` in C#LikeFree.
                 if (mail != null && mail.received == 0 && mail.Appendix.Count > 0)
                 {
-                    foreach(var appendix in mail.Appendix)
+                    foreach (var appendix in mail.Appendix)
                     {
                         if (appendixs.ContainsKey(appendix.Key))//merge count
                             appendixs[appendix.Key] += appendix.Value;
@@ -267,6 +290,21 @@ namespace TreasureBox
                     if (mail.wasRead == 0)
                         mail.wasRead = 1;
                 }
+#else
+                if (mail != null && mail.received == 0 && mail.appendix.Count > 0)
+                {
+                    foreach (var appendix in mail.appendix)
+                    {
+                        if (appendixs.ContainsKey(appendix.Key))//merge count
+                            appendixs[appendix.Key] += appendix.Value;
+                        else
+                            appendixs[appendix.Key] = appendix.Value;
+                    }
+                    mail.received = 1;
+                    if (mail.wasRead == 0)
+                        mail.wasRead = 1;
+                }
+#endif
             }
             CB_GetReward(appendixs);
         }
@@ -295,10 +333,7 @@ namespace TreasureBox
             {
                 ChangeItem(itemIds[i], itemCounts[i], (int)logItemType);
             }
-            JSONData jsonData = JSONData.NewPacket(PacketType.CB_GetReward);
-            jsonData["itemIds"] = itemIds;
-            jsonData["itemCounts"] = itemCounts;
-            Send(jsonData);
+            AccountManager.Instance.GetPlayer(uid)?.CB_GetReward(itemIds, itemCounts);
         }
         /// <summary>
         /// Delete mail
@@ -346,7 +381,7 @@ namespace TreasureBox
         {
             if (signIn == null)
             {
-                player.CallbackTip("LT_Tips_SignInNull");
+                player.CB_Tips("LT_Tips_SignInNull", true);
                 return;
             }
             signIn.GetReward(player);

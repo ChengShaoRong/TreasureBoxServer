@@ -1,8 +1,7 @@
 /*
-* C#Like 
-* Copyright © 2022-2023 RongRong 
-* It's automatic generate by KissEditor, don't modify this file. 
-*/
+ * It's automatic generate by 'KissNetObject', DON'T modify this file.
+ * You should modify 'Account.cs' or edit by 'KissNetObject'.
+ */
 
 using KissFramework;
 using System;
@@ -14,14 +13,11 @@ using System.Data;
 
 namespace TreasureBox
 {
-	/// <summary>
-	/// This class is automatic generate by 'KissEditor', for easy to interact with database. Don't modify this file.
-	/// </summary>
 	public abstract class Account_Base : MainNetObject<Account>
 	{
 		#region Update
 		/// <summary>
-		/// For internal call only. You can override it if you want custom it.
+		/// For internal call only. You can override it if you want customize it.
 		/// </summary>
 		public override void Update(ref string _strSQL_, ref MySqlParameter[] _mySqlParameters_)
 		{
@@ -33,70 +29,70 @@ namespace TreasureBox
 			{
 				_sb_.Append("`name` = @name,");
 				_param_ = new MySqlParameter("@name", MySqlDbType.VarChar, 64);
-				_param_.Value = name;
+				_param_.Value = _attribute_.name;
 				_ps_.Add(_param_);
 			}
 			if (HasUpdate(2ul))//UpdateMask.nicknameMask)
 			{
 				_sb_.Append("`nickname` = @nickname,");
 				_param_ = new MySqlParameter("@nickname", MySqlDbType.VarChar, 64);
-				_param_.Value = nickname;
+				_param_.Value = _attribute_.nickname;
 				_ps_.Add(_param_);
 			}
 			if (HasUpdate(8ul))//UpdateMask.moneyMask)
 			{
 				_sb_.Append("`money` = @money,");
 				_param_ = new MySqlParameter("@money", MySqlDbType.Int32);
-				_param_.Value = money;
+				_param_.Value = _attribute_.money;
 				_ps_.Add(_param_);
 			}
 			if (HasUpdate(16ul))//UpdateMask.diamondMask)
 			{
 				_sb_.Append("`diamond` = @diamond,");
 				_param_ = new MySqlParameter("@diamond", MySqlDbType.Int32);
-				_param_.Value = diamond;
+				_param_.Value = _attribute_.diamond;
 				_ps_.Add(_param_);
 			}
 			if (HasUpdate(32ul))//UpdateMask.lastLoginTimeMask)
 			{
 				_sb_.Append("`lastLoginTime` = @lastLoginTime,");
 				_param_ = new MySqlParameter("@lastLoginTime", MySqlDbType.DateTime);
-				_param_.Value = lastLoginTime;
+				_param_.Value = _attribute_.lastLoginTime;
 				_ps_.Add(_param_);
 			}
-			if (HasUpdate(64ul))//UpdateMask.expMask)
-			{
-				_sb_.Append("`exp` = @exp,");
-				_param_ = new MySqlParameter("@exp", MySqlDbType.Int32);
-				_param_.Value = exp;
-				_ps_.Add(_param_);
-			}
-			if (HasUpdate(128ul))//UpdateMask.lvMask)
+			if (HasUpdate(64ul))//UpdateMask.lvMask)
 			{
 				_sb_.Append("`lv` = @lv,");
 				_param_ = new MySqlParameter("@lv", MySqlDbType.Int32);
-				_param_.Value = lv;
+				_param_.Value = _attribute_.lv;
+				_ps_.Add(_param_);
+			}
+			if (HasUpdate(128ul))//UpdateMask.expMask)
+			{
+				_sb_.Append("`exp` = @exp,");
+				_param_ = new MySqlParameter("@exp", MySqlDbType.Int32);
+				_param_.Value = _attribute_.exp;
 				_ps_.Add(_param_);
 			}
 			if (HasUpdate(256ul))//UpdateMask.vpMask)
 			{
 				_sb_.Append("`vp` = @vp,");
 				_param_ = new MySqlParameter("@vp", MySqlDbType.Int32);
-				_param_.Value = vp;
+				_param_.Value = _attribute_.vp;
 				_ps_.Add(_param_);
 			}
 			if (HasUpdate(512ul))//UpdateMask.vpTimeMask)
 			{
 				_sb_.Append("`vpTime` = @vpTime,");
 				_param_ = new MySqlParameter("@vpTime", MySqlDbType.DateTime);
-				_param_.Value = vpTime;
+				_param_.Value = _attribute_.vpTime;
 				_ps_.Add(_param_);
 			}
 			if (HasUpdate(1024ul))//UpdateMask.vipExpMask)
 			{
 				_sb_.Append("`vipExp` = @vipExp,");
 				_param_ = new MySqlParameter("@vipExp", MySqlDbType.Int32);
-				_param_.Value = vipExp;
+				_param_.Value = _attribute_.vipExp;
 				_ps_.Add(_param_);
 			}
 			_waitingUpdate_ = false;
@@ -110,7 +106,7 @@ namespace TreasureBox
 				_ps_.Add(_param_);
 				_strSQL_ = _sb_.ToString();
 				_mySqlParameters_ = _ps_.ToArray();
-			}
+	}
 			else
 			{
 				Logger.LogWarning("No need update 'Account', you should call 'Account.Update()' or 'Account.UpdateImmediately()' after change something need to update to database.");
@@ -130,8 +126,8 @@ namespace TreasureBox
 			_attribute_.money = Convert.ToInt32(data["money"]);
 			_attribute_.diamond = Convert.ToInt32(data["diamond"]);
 			_attribute_.lastLoginTime = Convert2DateTime(data["lastLoginTime"]);
-			_attribute_.exp = Convert.ToInt32(data["exp"]);
 			_attribute_.lv = Convert.ToInt32(data["lv"]);
+			_attribute_.exp = Convert.ToInt32(data["exp"]);
 			_attribute_.vp = Convert.ToInt32(data["vp"]);
 			_attribute_.vpTime = Convert2DateTime(data["vpTime"]);
 			_attribute_.vipExp = Convert.ToInt32(data["vipExp"]);
@@ -157,22 +153,21 @@ namespace TreasureBox
 			_param_.Value = uid;
 			_ps_.Add(_param_);
 			Select("SELECT * FROM `Account` WHERE `uid` = @uid", _ps_, _callback_);
-		}
-		/// <summary>
-		/// Select data from database by name and acctType. The select operation run in background thread.The callback action occur after database operation done.
+		}		/// <summary>
+		/// Select data from database by acctType and name. The select operation run in background thread.The callback action occur after database operation done.
 		/// </summary>
 		/// <param name="_callback_">This callback occur after database operation done.</param>
-		public static void SelectByNameAndAcctType(string name, int acctType, Action<List<Account>, string> _callback_)
+		public static void SelectByAcctTypeAndName(int acctType, string name, Action<List<Account>, string> _callback_)
 		{
 			List<MySqlParameter> _ps_ = new List<MySqlParameter>();
 			MySqlParameter _param_;
-			_param_ = new MySqlParameter("@name", MySqlDbType.VarChar, 64);
-			_param_.Value = name;
-			_ps_.Add(_param_);
 			_param_ = new MySqlParameter("@acctType", MySqlDbType.Int32);
 			_param_.Value = acctType;
 			_ps_.Add(_param_);
-			Select("SELECT * FROM `Account` WHERE `name` = @name AND `acctType` = @acctType", _ps_, _callback_);
+			_param_ = new MySqlParameter("@name", MySqlDbType.VarChar, 64);
+			_param_.Value = name;
+			_ps_.Add(_param_);
+			Select("SELECT * FROM `Account` WHERE `acctType` = @acctType AND `name` = @name", _ps_, _callback_);
 		}
 		#endregion //Select
 
@@ -214,22 +209,6 @@ namespace TreasureBox
 			_ps_.Add(_param_);
 			Delete("DELETE FROM `Account` WHERE `uid` = @uid", _ps_, _callback_);
 		}
-		/// <summary>
-		/// Delete data from database by name and acctType. The delete operation run in background thread.The callback action occur after database operation done.
-		/// </summary>
-		/// <param name="_callback_">This callback occur after database operation done.</param>
-		public static void DeleteByNameAndAcctType(string name, int acctType, Action<int, string> _callback_)
-		{
-			List<MySqlParameter> _ps_ = new List<MySqlParameter>();
-			MySqlParameter _param_;
-			_param_ = new MySqlParameter("@name", MySqlDbType.VarChar, 64);
-			_param_.Value = name;
-			_ps_.Add(_param_);
-			_param_ = new MySqlParameter("@acctType", MySqlDbType.Int32);
-			_param_.Value = acctType;
-			_ps_.Add(_param_);
-			Delete("DELETE FROM `Account` WHERE `name` = @name AND `acctType` = @acctType", _ps_, _callback_);
-		}
 		#endregion //Delete
 
 		#region Insert
@@ -237,7 +216,7 @@ namespace TreasureBox
 		/// Insert into database. The insert operation run in background thread. The callback occur after insert into database. (All params)
 		/// </summary>
 		/// <param name="_callback_">This callback occur after database operation done. You can ignore it if you don't care about the callback.</param>
-		public static void Insert(int acctType, string name, DateTime createTime, string nickname, int icon, int money, int diamond, DateTime lastLoginTime, int exp, int lv, int vp, DateTime vpTime, int vipExp, Action<Account, string> _callback_ = null)
+		public static void Insert(int acctType, string name, DateTime createTime, string nickname, int icon, int money, int diamond, DateTime lastLoginTime, int lv, int exp, int vp, DateTime vpTime, int vipExp, Action<Account, string> _callback_ = null)
 		{
 			List<MySqlParameter> _ps_ = new List<MySqlParameter>();
 			MySqlParameter _param_;
@@ -265,11 +244,11 @@ namespace TreasureBox
 			_param_ = new MySqlParameter("@lastLoginTime", MySqlDbType.DateTime);
 			_param_.Value = lastLoginTime;
 			_ps_.Add(_param_);
-			_param_ = new MySqlParameter("@exp", MySqlDbType.Int32);
-			_param_.Value = exp;
-			_ps_.Add(_param_);
 			_param_ = new MySqlParameter("@lv", MySqlDbType.Int32);
 			_param_.Value = lv;
+			_ps_.Add(_param_);
+			_param_ = new MySqlParameter("@exp", MySqlDbType.Int32);
+			_param_.Value = exp;
 			_ps_.Add(_param_);
 			_param_ = new MySqlParameter("@vp", MySqlDbType.Int32);
 			_param_.Value = vp;
@@ -280,7 +259,7 @@ namespace TreasureBox
 			_param_ = new MySqlParameter("@vipExp", MySqlDbType.Int32);
 			_param_.Value = vipExp;
 			_ps_.Add(_param_);
-			Insert("INSERT INTO `Account` (`acctType`,`name`,`createTime`,`nickname`,`icon`,`money`,`diamond`,`lastLoginTime`,`exp`,`lv`,`vp`,`vpTime`,`vipExp`) VALUES (@acctType,@name,@createTime,@nickname,@icon,@money,@diamond,@lastLoginTime,@exp,@lv,@vp,@vpTime,@vipExp)",
+			Insert("INSERT INTO `Account` (`acctType`,`name`,`createTime`,`nickname`,`icon`,`money`,`diamond`,`lastLoginTime`,`lv`,`exp`,`vp`,`vpTime`,`vipExp`) VALUES (@acctType,@name,@createTime,@nickname,@icon,@money,@diamond,@lastLoginTime,@lv,@exp,@vp,@vpTime,@vipExp)",
 				_ps_,
 				(_lastInsertedId_, _error_) =>
 				{
@@ -297,8 +276,8 @@ namespace TreasureBox
 						_account_._attribute_.money = money;
 						_account_._attribute_.diamond = diamond;
 						_account_._attribute_.lastLoginTime = lastLoginTime;
-						_account_._attribute_.exp = exp;
 						_account_._attribute_.lv = lv;
+						_account_._attribute_.exp = exp;
 						_account_._attribute_.vp = vp;
 						_account_._attribute_.vpTime = vpTime;
 						_account_._attribute_.vipExp = vipExp;
@@ -308,7 +287,6 @@ namespace TreasureBox
 						_callback_(_account_, _error_);
 				});
 		}
-
 		/// <summary>
 		/// Insert into database. The insert operation run in background thread. The callback occur after insert into database. (Selected param only.)
 		/// </summary>
@@ -346,7 +324,6 @@ namespace TreasureBox
 		}
 
 		#endregion //Insert
-
 		#region Sync
 		public void RegisterSync()
 		{
@@ -468,6 +445,7 @@ namespace TreasureBox
 		}
 		public void SetSignIn(SignIn signIn)
 		{
+			if (signIn == null) return;
 			this.signIn = signIn;
 			signIn.MarkModifyMaskAll();
 			signIn._mainObject_ = this;
@@ -486,10 +464,10 @@ namespace TreasureBox
 		public void MarkModifyMaskAllSubSystem()
 		{
 			foreach(Mail one in mails.Values)
-				one.MarkModifyMaskAll();
+				one?.MarkModifyMaskAll();
 			foreach(Item one in items.Values)
-				one.MarkModifyMaskAll();
-			signIn.MarkModifyMaskAll();
+				one?.MarkModifyMaskAll();
+			signIn?.MarkModifyMaskAll();
 		}
 		public virtual void OnMailLoaded() { }
 		public virtual void OnItemLoaded() { }
@@ -552,7 +530,7 @@ namespace TreasureBox
 					OnAllSubSystemLoaded();
 			});
 		}
-#endregion //Sync
+		#endregion //Sync
 		#region Property
 		public enum UpdateMask : ulong
 		{
@@ -563,8 +541,8 @@ namespace TreasureBox
 			moneyMask = 8ul,
 			diamondMask = 16ul,
 			lastLoginTimeMask = 32ul,
-			expMask = 64ul,
-			lvMask = 128ul,
+			lvMask = 64ul,
+			expMask = 128ul,
 			vpMask = 256ul,
 			vpTimeMask = 512ul,
 			vipExpMask = 1024ul,
@@ -576,173 +554,147 @@ namespace TreasureBox
 		[KissJsonSerializeProperty]
 		public int uid
 		{
-			get { return _attribute_.uid; }
-			set
-			{
-				_attribute_.uid = value;
-			}
+			get => _attribute_.uid; 
+			set => _attribute_.uid = value;
 		}
-
 		[KissJsonSerializeProperty]
 		public int acctType
 		{
-			get { return _attribute_.acctType; }
-			set
-			{
-				_attribute_.acctType = value;
-			}
+			get => _attribute_.acctType; 
+			set => _attribute_.acctType = value;
 		}
-
 		[KissJsonSerializeProperty]
 		public string name
 		{
-			get { return _attribute_.name; }
+			get => _attribute_.name; 
 			set
 			{
 				_attribute_.name = value;
 				MarkUpdateAndModifyMask(1ul);//UpdateMask.uidMask
-				AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
 				SyncToClient("account");
 			}
 		}
-
 		[KissJsonSerializeProperty]
 		public DateTime createTime
 		{
-			get { return _attribute_.createTime; }
-			set
-			{
-				_attribute_.createTime = value;
-			}
+			get => _attribute_.createTime; 
+			set => _attribute_.createTime = value;
 		}
-
 		[KissJsonSerializeProperty]
 		public string nickname
 		{
-			get { return _attribute_.nickname; }
+			get => _attribute_.nickname; 
 			set
 			{
 				_attribute_.nickname = value;
 				MarkUpdateAndModifyMask(2ul);//UpdateMask.nicknameMask
-				AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
 				SyncToClient("account");
 			}
 		}
-
 		[KissJsonSerializeProperty]
 		public int icon
 		{
-			get { return _attribute_.icon; }
-			set
-			{
-				_attribute_.icon = value;
-			}
+			get => _attribute_.icon; 
+			set => _attribute_.icon = value;
 		}
-
 		[KissJsonSerializeProperty]
 		public int money
 		{
-			get { return _attribute_.money; }
+			get => _attribute_.money; 
 			set
 			{
 				_attribute_.money = value;
 				MarkUpdateAndModifyMask(8ul);//UpdateMask.moneyMask
-				AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
 				SyncToClient("account");
 			}
 		}
-
 		[KissJsonSerializeProperty]
 		public int diamond
 		{
-			get { return _attribute_.diamond; }
+			get => _attribute_.diamond; 
 			set
 			{
 				_attribute_.diamond = value;
 				MarkUpdateAndModifyMask(16ul);//UpdateMask.diamondMask
-				AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
 				SyncToClient("account");
 			}
 		}
-
 		[KissJsonSerializeProperty]
 		public DateTime lastLoginTime
 		{
-			get { return _attribute_.lastLoginTime; }
+			get => _attribute_.lastLoginTime; 
 			set
 			{
 				_attribute_.lastLoginTime = value;
 				MarkUpdateAndModifyMask(32ul);//UpdateMask.lastLoginTimeMask
-				AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
 				SyncToClient("account");
 			}
 		}
-
-		[KissJsonSerializeProperty]
-		public int exp
-		{
-			get { return _attribute_.exp; }
-			set
-			{
-				_attribute_.exp = value;
-				MarkUpdateAndModifyMask(64ul);//UpdateMask.expMask
-				AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
-				SyncToClient("account");
-			}
-		}
-
 		[KissJsonSerializeProperty]
 		public int lv
 		{
-			get { return _attribute_.lv; }
+			get => _attribute_.lv; 
 			set
 			{
 				_attribute_.lv = value;
-				MarkUpdateAndModifyMask(128ul);//UpdateMask.lvMask
-				AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				MarkUpdateAndModifyMask(64ul);//UpdateMask.lvMask
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
 				SyncToClient("account");
 			}
 		}
-
+		[KissJsonSerializeProperty]
+		public int exp
+		{
+			get => _attribute_.exp; 
+			set
+			{
+				_attribute_.exp = value;
+				MarkUpdateAndModifyMask(128ul);//UpdateMask.expMask
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				SyncToClient("account");
+			}
+		}
 		[KissJsonSerializeProperty]
 		public int vp
 		{
-			get { return _attribute_.vp; }
+			get => _attribute_.vp; 
 			set
 			{
 				_attribute_.vp = value;
 				MarkUpdateAndModifyMask(256ul);//UpdateMask.vpMask
-				AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
 				SyncToClient("account");
 			}
 		}
-
 		[KissJsonSerializeProperty]
 		public DateTime vpTime
 		{
-			get { return _attribute_.vpTime; }
+			get => _attribute_.vpTime; 
 			set
 			{
 				_attribute_.vpTime = value;
 				MarkUpdateAndModifyMask(512ul);//UpdateMask.vpTimeMask
-				AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
 				SyncToClient("account");
 			}
 		}
-
 		[KissJsonSerializeProperty]
 		public int vipExp
 		{
-			get { return _attribute_.vipExp; }
+			get => _attribute_.vipExp; 
 			set
 			{
 				_attribute_.vipExp = value;
 				MarkUpdateAndModifyMask(1024ul);//UpdateMask.vipExpMask
-				AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
 				SyncToClient("account");
 			}
 		}
-
 		#endregion //Property
 
 		#region JSON
@@ -771,16 +723,17 @@ namespace TreasureBox
 				_jsonData_["diamond"] = _attribute_.diamond;
 			if ((mask & 32ul) > 0)//UpdateMask.lastLoginTimeMask
 				_jsonData_["lastLoginTime"] = _attribute_.lastLoginTime;
-			if ((mask & 64ul) > 0)//UpdateMask.expMask
-				_jsonData_["exp"] = _attribute_.exp;
-			if ((mask & 128ul) > 0)//UpdateMask.lvMask
+			if ((mask & 64ul) > 0)//UpdateMask.lvMask
 				_jsonData_["lv"] = _attribute_.lv;
+			if ((mask & 128ul) > 0)//UpdateMask.expMask
+				_jsonData_["exp"] = _attribute_.exp;
 			if ((mask & 256ul) > 0)//UpdateMask.vpMask
 				_jsonData_["vp"] = _attribute_.vp;
 			if ((mask & 512ul) > 0)//UpdateMask.vpTimeMask
 				_jsonData_["vpTime"] = _attribute_.vpTime;
 			if ((mask & 1024ul) > 0)//UpdateMask.vipExpMask
 				_jsonData_["vipExp"] = _attribute_.vipExp;
+
 			_jsonData_["_uid_"] = _uid_;
 			_jsonData_["_sendMask_"] = mask;
 			return _jsonData_;
@@ -791,7 +744,7 @@ namespace TreasureBox
 		/// <param name="_mask_">Which part you want to clone, default is all.</param>
 		/// </summary>
 		public void Clone(Account _source_, ulong _mask_ = ulong.MaxValue)
-			{
+		{
 			if ((_mask_ & 1ul) > 0)//UpdateMask.uidMask
 			{
 				uid = _source_.uid;
@@ -809,18 +762,18 @@ namespace TreasureBox
 				diamond = _source_.diamond;
 			if ((_mask_ & 32ul) > 0)//UpdateMask.lastLoginTimeMask
 				lastLoginTime = _source_.lastLoginTime;
-			if ((_mask_ & 64ul) > 0)//UpdateMask.expMask
-				exp = _source_.exp;
-			if ((_mask_ & 128ul) > 0)//UpdateMask.lvMask
+			if ((_mask_ & 64ul) > 0)//UpdateMask.lvMask
 				lv = _source_.lv;
+			if ((_mask_ & 128ul) > 0)//UpdateMask.expMask
+				exp = _source_.exp;
 			if ((_mask_ & 256ul) > 0)//UpdateMask.vpMask
 				vp = _source_.vp;
 			if ((_mask_ & 512ul) > 0)//UpdateMask.vpTimeMask
 				vpTime = _source_.vpTime;
 			if ((_mask_ & 1024ul) > 0)//UpdateMask.vipExpMask
 				vipExp = _source_.vipExp;
-		}
 
+		}
 		#endregion //JSON
 
 		#region PrivateFields
@@ -832,40 +785,41 @@ namespace TreasureBox
 			public int acctType;
 			public string name;
 			public DateTime createTime;
-		
+
 			// nickname
 			public string nickname;
-		
+
 			// icon
 			public int icon;
-		
+
 			// money
 			public int money;
-		
+
 			// diamond
 			public int diamond;
-		
+
 			// lastLoginTime
 			public DateTime lastLoginTime;
-		
-			// exp
-			public int exp;
-		
+
 			// lv
 			public int lv;
-		
+
+			// exp
+			public int exp;
+
 			// vp
 			public int vp;
-		
+
 			// vpTime
 			public DateTime vpTime;
-		
+
 			// vipExp
 			public int vipExp;
-		
+
 		}
+		[KissJsonDontSerialize]
+		public bool SyncToDB = true;
 		private _fields_ _attribute_ = new _fields_();
 		#endregion //PrivateFields
-
 	}
 }

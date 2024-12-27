@@ -1,12 +1,16 @@
 /*
-* C#Like 
-* Copyright © 2022-2023 RongRong 
-* It's automatic generate by KissEditor, don't modify this file. 
-*/
+ * C#Like 
+ * Copyright © 2022-2025 RongRong 
+ * It's automatic generate by KissNetObject.
+ */
+
 
 using KissFramework;
 using System;
 using MySql.Data.MySqlClient;
+using System.Collections.Generic;
+using System.Text;
+using CSharpLike;
 
 namespace TreasureBox
 {
@@ -52,7 +56,7 @@ namespace TreasureBox
 			ps[4].Value = DateTime.Now;
 			AsyncDatabaseManager.ExecuteSQLInBackgroundThread(strSQL, ps);
 		}
-		public static void LogMail(int acctId, int logType, string appendix, string content, string title)
+		public static void LogMail(int acctId, int logType, Dictionary<int,int> appendix, string content, string title)
 		{
 			string strSQL = $"INSERT INTO `LogMail` (`acctId`,`logType`,`appendix`,`content`,`title`,`createTime`) VALUES (@acctId,@logType,@appendix,@content,@title,@createTime)";
 			MySqlParameter[] ps = new MySqlParameter[6]
@@ -66,7 +70,7 @@ namespace TreasureBox
 			};
 			ps[0].Value = acctId;
 			ps[1].Value = logType;
-			ps[2].Value = appendix;
+			ps[2].Value = NetObjectUtils.DictionaryToString(appendix);
 			ps[3].Value = content;
 			ps[4].Value = title;
 			ps[5].Value = DateTime.Now;

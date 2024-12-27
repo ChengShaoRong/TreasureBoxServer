@@ -112,6 +112,26 @@ namespace TreasureBox
             Logger.LogInfo("Framework:OnStart");
 
             //RaiseEvent(ForceCheckCacheFile, 1f);
+            DeleteLogs();
+            RaiseUniqueEvent(DeleteLogs, "DeleteLogFiles", 3600f);
+        }
+        void DeleteLogs()
+        {
+            DateTime dtDelete = DateTime.Now.AddHours(-config.keepLogHourTime);
+            foreach(var one in Directory.GetFiles(Environment.CurrentDirectory + "/Log", "*.log", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    FileInfo fileInfo = new FileInfo(one);
+                    if (fileInfo.LastWriteTime < dtDelete)
+                    {
+                        File.Delete(one);
+                        Logger.LogInfo($"Try delete old log file : '{one}'");
+                    }
+                }
+                catch
+                { }
+            }
         }
         [CommandMethod]
         public static void Reload()

@@ -29,7 +29,7 @@ namespace TreasureBox
         /// <param name="param1">Command parameter 1</param>
         /// <param name="param2">Command parameter 2</param>
         /// <param name="param3">Command parameter 3, it must type of interger</param>
-        /// <param name="param4">Command parameter 3, it must type of float</param>
+        /// <param name="param4">Command parameter 4, it must type of float</param>
         [CommandMethod]
         public static void TestComman(string param1, string param2, int param3, float param4)
         {
@@ -49,6 +49,21 @@ namespace TreasureBox
         public static void Exit()
         {
             Framework.Running = false;
+        }
+        [CommandMethod]
+        public static void ChangeMoney(int uid, int money)
+        {
+            Logger.LogInfo($"ChangeMoney({uid},{money})");
+            Player player = AccountManager.Instance.GetPlayer(uid);
+            if (player != null)
+            {
+                if (player.account != null)
+                    player.account.money = money;
+                else
+                    Logger.LogInfo($"ChangeMoney not exist account");
+            }
+            else
+                Logger.LogInfo($"ChangeMoney not exist player");
         }
         [CommandMethod]
         public static void ReloadWWW()

@@ -1,8 +1,7 @@
 /*
-* C#Like 
-* Copyright © 2022-2023 RongRong 
-* It's automatic generate by KissEditor, don't modify this file. 
-*/
+ * It's automatic generate by 'KissNetObject', DON'T modify this file.
+ * You should modify 'Mail.cs' or edit by 'KissNetObject'.
+ */
 
 using KissFramework;
 using System;
@@ -14,14 +13,11 @@ using System.Data;
 
 namespace TreasureBox
 {
-	/// <summary>
-	/// This class is automatic generate by 'KissEditor', for easy to interact with database. Don't modify this file.
-	/// </summary>
 	public abstract class Mail_Base : NetObject<Mail, Account>
 	{
 		#region Update
 		/// <summary>
-		/// For internal call only. You can override it if you want custom it.
+		/// For internal call only. You can override it if you want customize it.
 		/// </summary>
 		public override void Update(ref string _strSQL_, ref MySqlParameter[] _mySqlParameters_)
 		{
@@ -33,11 +29,11 @@ namespace TreasureBox
 			{
 				_sb_.Append("`wasRead` = @wasRead,");
 				_param_ = new MySqlParameter("@wasRead", MySqlDbType.Byte);
-				_param_.Value = wasRead;
+				_param_.Value = _attribute_.wasRead;
 				_ps_.Add(_param_);
 				_sb_.Append("`received` = @received,");
 				_param_ = new MySqlParameter("@received", MySqlDbType.Byte);
-				_param_.Value = received;
+				_param_.Value = _attribute_.received;
 				_ps_.Add(_param_);
 			}
 			_waitingUpdate_ = false;
@@ -51,7 +47,7 @@ namespace TreasureBox
 				_ps_.Add(_param_);
 				_strSQL_ = _sb_.ToString();
 				_mySqlParameters_ = _ps_.ToArray();
-			}
+	}
 			else
 			{
 				Logger.LogWarning("No need update 'Mail', you should call 'Mail.Update()' or 'Mail.UpdateImmediately()' after change something need to update to database.");
@@ -93,8 +89,7 @@ namespace TreasureBox
 			_param_.Value = uid;
 			_ps_.Add(_param_);
 			Select("SELECT * FROM `Mail` WHERE `uid` = @uid", _ps_, _callback_);
-		}
-		/// <summary>
+		}		/// <summary>
 		/// Select data from database by acctId. The select operation run in background thread.The callback action occur after database operation done.
 		/// </summary>
 		/// <param name="_callback_">This callback occur after database operation done.</param>
@@ -213,7 +208,6 @@ namespace TreasureBox
 						_callback_(_mail_, _error_);
 				});
 		}
-
 		/// <summary>
 		/// Insert into database. The insert operation run in background thread. The callback occur after insert into database. (Selected param only.)
 		/// </summary>
@@ -281,111 +275,75 @@ namespace TreasureBox
 		[KissJsonSerializeProperty]
 		public int uid
 		{
-			get { return _attribute_.uid; }
-			set
-			{
-				_attribute_.uid = value;
-			}
+			get => _attribute_.uid; 
+			set => _attribute_.uid = value;
 		}
-
 		[KissJsonSerializeProperty]
 		public int acctId
 		{
-			get { return _attribute_.acctId; }
-			set
-			{
-				_attribute_.acctId = value;
-			}
+			get => _attribute_.acctId; 
+			set => _attribute_.acctId = value;
 		}
-
 		[KissJsonSerializeProperty]
 		public int senderId
 		{
-			get { return _attribute_.senderId; }
-			set
-			{
-				_attribute_.senderId = value;
-			}
+			get => _attribute_.senderId; 
+			set => _attribute_.senderId = value;
 		}
-
 		[KissJsonSerializeProperty]
 		public string senderName
 		{
-			get { return _attribute_.senderName; }
-			set
-			{
-				_attribute_.senderName = value;
-			}
+			get => _attribute_.senderName; 
+			set => _attribute_.senderName = value;
 		}
-
 		[KissJsonSerializeProperty]
 		public string title
 		{
-			get { return _attribute_.title; }
-			set
-			{
-				_attribute_.title = value;
-			}
+			get => _attribute_.title; 
+			set => _attribute_.title = value;
 		}
-
 		[KissJsonSerializeProperty]
 		public string content
 		{
-			get { return _attribute_.content; }
-			set
-			{
-				_attribute_.content = value;
-			}
+			get => _attribute_.content; 
+			set => _attribute_.content = value;
 		}
-
 		[KissJsonSerializeProperty]
 		public string appendix
 		{
-			get { return _attribute_.appendix; }
-			set
-			{
-				_attribute_.appendix = value;
-			}
+			get => _attribute_.appendix; 
+			set => _attribute_.appendix = value;
 		}
-
 		[KissJsonSerializeProperty]
 		public DateTime createTime
 		{
-			get { return _attribute_.createTime; }
-			set
-			{
-				_attribute_.createTime = value;
-			}
+			get => _attribute_.createTime; 
+			set => _attribute_.createTime = value;
 		}
-
 		[KissJsonSerializeProperty]
 		public byte wasRead
 		{
-			get { return _attribute_.wasRead; }
+			get => _attribute_.wasRead; 
 			set
 			{
 				_attribute_.wasRead = value;
 				MarkUpdateAndModifyMask(2ul);//UpdateMask.wasReadMask
-				AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
-				if (_mainObject_ != null)
-					_mainObject_.SyncToClient("mails");
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				_mainObject_?.SyncToClient("mails");
 			}
 		}
-
 		[KissJsonSerializeProperty]
 		public byte received
 		{
-			get { return _attribute_.received; }
+			get => _attribute_.received; 
 			set
 			{
 				_attribute_.received = value;
 				MarkUpdateAndModifyMask(2ul);//UpdateMask.wasReadMask
-				AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
-				if (_mainObject_ != null)
-					_mainObject_.SyncToClient("mails");
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				_mainObject_?.SyncToClient("mails");
 			}
 		}
-
 		#endregion //Property
 
 		#region JSON
@@ -413,6 +371,7 @@ namespace TreasureBox
 				_jsonData_["wasRead"] = _attribute_.wasRead;
 				_jsonData_["received"] = _attribute_.received;
 			}
+
 			_jsonData_["_uid_"] = _uid_;
 			_jsonData_["_sendMask_"] = mask;
 			return _jsonData_;
@@ -423,7 +382,7 @@ namespace TreasureBox
 		/// <param name="_mask_">Which part you want to clone, default is all.</param>
 		/// </summary>
 		public void Clone(Mail _source_, ulong _mask_ = ulong.MaxValue)
-			{
+		{
 			if ((_mask_ & 1ul) > 0)//UpdateMask.uidMask
 			{
 				uid = _source_.uid;
@@ -440,8 +399,8 @@ namespace TreasureBox
 				wasRead = _source_.wasRead;
 				received = _source_.received;
 			}
-		}
 
+		}
 		#endregion //JSON
 
 		#region PrivateFields
@@ -457,14 +416,15 @@ namespace TreasureBox
 			public string content;
 			public string appendix;
 			public DateTime createTime;
-		
+
 			// wasRead
 			public byte wasRead;
 			public byte received;
-		
+
 		}
+		[KissJsonDontSerialize]
+		public bool SyncToDB = true;
 		private _fields_ _attribute_ = new _fields_();
 		#endregion //PrivateFields
-
 	}
 }

@@ -23,11 +23,11 @@ namespace TreasureBox
 			int day = DateTime.Now.Day;
 			if (SignInDays.Contains(day))
 			{
-				player.CallbackTip("LT_Tips_SignInRewardHadBeenToken");
+				player.CB_Tips("LT_Tips_SignInRewardHadBeenToken", true);
 				return;
 			}
 			mSignInDays.Add(day);
-			signInList = Global.ListToString(mSignInDays);//This step will save to DB and sync to client in backgroup thread
+			signInList = Global.ListToString(mSignInDays);//This step will save to DB and sync to client in background thread
 			Dictionary<int, int> items = SignInCsv.Get(day).GetReward(player.account.Vip);
 			player.account.CB_GetReward(items, LogManagerEnum.LogItemType.SignIn);
 		}
