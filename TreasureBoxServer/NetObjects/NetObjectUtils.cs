@@ -167,7 +167,8 @@ namespace CSharpLike
                 "Char" => Convert.ToChar(str),
                 "Boolean" => Convert.ToBoolean(str),
                 "String" => str,
-                _ => type.IsValueType ? Activator.CreateInstance(type) : null
+                "DateTime" => Convert.ToDateTime(str, CultureInfo.InvariantCulture),
+                _ => type.IsValueType ? Activator.CreateInstance(type, str) : null
             };
         }
         private static void AppendString(StringBuilder sb, object obj)
@@ -186,7 +187,7 @@ namespace CSharpLike
                 else
                     sb.Append($"{s},");
             }
-            else if (obj is float || obj is double)
+            else if (obj is float || obj is double || obj is DateTime)
             {
                 sb.Append(Convert.ToString(obj, CultureInfo.InvariantCulture) + ",");
             }
