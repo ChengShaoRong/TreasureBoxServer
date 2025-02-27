@@ -114,6 +114,15 @@ namespace TreasureBox
             //RaiseEvent(ForceCheckCacheFile, 1f);
             DeleteLogs();
             RaiseUniqueEvent(DeleteLogs, "DeleteLogFiles", 3600f);
+
+            GangManager.Init();
+
+            Dictionary<int, DateTime> ttt = new Dictionary<int, DateTime>();
+            ttt[1] = DateTime.Now;
+            ttt[2] = DateTime.Now.AddHours(1);
+            string str = NetObjectUtils.DictionaryToString(ttt);
+            Dictionary<int, DateTime> ttt2 = NetObjectUtils.StringToDictionary<int, DateTime>(str);
+            str = NetObjectUtils.DictionaryToString(ttt2);
         }
         void DeleteLogs()
         {

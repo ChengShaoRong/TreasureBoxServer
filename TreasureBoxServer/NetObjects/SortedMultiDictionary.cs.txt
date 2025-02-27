@@ -1,0 +1,396 @@
+using System;
+using System.Collections.Generic;
+using System.Collections;
+using System.Text;
+using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
+
+namespace CSharpLike
+{
+    //
+    // 摘要:
+    //     Represents a collection of key/value pairs that are sorted on the key.
+    //
+    // 类型参数:
+    //   TKey:
+    //     The type of the keys in the dictionary.
+    //
+    //   TValue:
+    //     The type of the values in the dictionary.
+    public class SortedMultiDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable, IDictionary<TKey, TValue>, IReadOnlyCollection<KeyValuePair<TKey, TValue>>, IReadOnlyDictionary<TKey, TValue>, ICollection, IDictionary where TKey : notnull
+    {
+        #region private imp
+        int mCount = 0;
+        private SortedDictionary<TKey, List<TValue>> mValues;
+        private void Add(IDictionary<TKey, TValue> dictionary)
+        {
+            mCount += dictionary.Count;
+            foreach (var one in dictionary)
+            {
+                if (!mValues.TryGetValue(one.Key, out List<TValue> list))
+                {
+                    list = new List<TValue>();
+                    mValues[one.Key] = list;
+                }
+                list.Add(one.Value);
+            }
+        }
+        #endregion //private imp
+        //
+        // 摘要:
+        //     Initializes a new instance of the System.Collections.Generic.SortedDictionary`2
+        //     class that is empty and uses the default System.Collections.Generic.IComparer`1
+        //     implementation for the key type.
+        public SortedMultiDictionary()
+        {
+            mValues = new SortedDictionary<TKey, List<TValue>>();
+        }
+        //
+        // 摘要:
+        //     Initializes a new instance of the System.Collections.Generic.SortedDictionary`2
+        //     class that is empty and uses the specified System.Collections.Generic.IComparer`1
+        //     implementation to compare keys.
+        //
+        // 参数:
+        //   comparer:
+        //     The System.Collections.Generic.IComparer`1 implementation to use when comparing
+        //     keys, or null to use the default System.Collections.Generic.Comparer`1 for the
+        //     type of the key.
+        public SortedMultiDictionary(IComparer<TKey>? comparer)
+        {
+            mValues = new SortedDictionary<TKey, List<TValue>>(comparer);
+        }
+        //
+        // 摘要:
+        //     Initializes a new instance of the System.Collections.Generic.SortedDictionary`2
+        //     class that contains elements copied from the specified System.Collections.Generic.IDictionary`2
+        //     and uses the default System.Collections.Generic.IComparer`1 implementation for
+        //     the key type.
+        //
+        // 参数:
+        //   dictionary:
+        //     The System.Collections.Generic.IDictionary`2 whose elements are copied to the
+        //     new System.Collections.Generic.SortedDictionary`2.
+        //
+        // 异常:
+        //   T:System.ArgumentNullException:
+        //     dictionary is null.
+        //
+        //   T:System.ArgumentException:
+        //     dictionary contains one or more duplicate keys.
+        public SortedMultiDictionary(IDictionary<TKey, TValue> dictionary)
+        {
+            mValues = new SortedDictionary<TKey, List<TValue>>();
+            Add(dictionary);
+        }
+        //
+        // 摘要:
+        //     Initializes a new instance of the System.Collections.Generic.SortedDictionary`2
+        //     class that contains elements copied from the specified System.Collections.Generic.IDictionary`2
+        //     and uses the specified System.Collections.Generic.IComparer`1 implementation
+        //     to compare keys.
+        //
+        // 参数:
+        //   dictionary:
+        //     The System.Collections.Generic.IDictionary`2 whose elements are copied to the
+        //     new System.Collections.Generic.SortedDictionary`2.
+        //
+        //   comparer:
+        //     The System.Collections.Generic.IComparer`1 implementation to use when comparing
+        //     keys, or null to use the default System.Collections.Generic.Comparer`1 for the
+        //     type of the key.
+        //
+        // 异常:
+        //   T:System.ArgumentNullException:
+        //     dictionary is null.
+        //
+        //   T:System.ArgumentException:
+        //     dictionary contains one or more duplicate keys.
+        public SortedMultiDictionary(IDictionary<TKey, TValue> dictionary, IComparer<TKey>? comparer)
+        {
+            mValues = new SortedDictionary<TKey, List<TValue>>(comparer);
+            Add(dictionary);
+        }
+
+        //
+        // 摘要:
+        //     Gets or sets the value associated with the specified key.
+        //
+        // 参数:
+        //   key:
+        //     The key of the value to get or set.
+        //
+        // 返回结果:
+        //     The value associated with the specified key. If the specified key is not found,
+        //     a get operation throws a System.Collections.Generic.KeyNotFoundException, and
+        //     a set operation creates a new element with the specified key.
+        //
+        // 异常:
+        //   T:System.ArgumentNullException:
+        //     key is null.
+        //
+        //   T:System.Collections.Generic.KeyNotFoundException:
+        //     The property is retrieved and key does not exist in the collection.
+        public TValue this[TKey key]
+        {
+            get => mValues[key][0];
+            set
+            {
+                if (!mValues.TryGetValue(key, out List<TValue> list))
+                {
+                    list = new List<TValue>();
+                    mValues[key] = list;
+                    mCount++;
+                    list.Add(value);
+                }
+                else
+                    list[0] = value;
+            }
+        }
+        //
+        // 摘要:
+        //     Gets the System.Collections.Generic.IComparer`1 used to order the elements of
+        //     the System.Collections.Generic.SortedDictionary`2.
+        //
+        // 返回结果:
+        //     The System.Collections.Generic.IComparer`1 used to order the elements of the
+        //     System.Collections.Generic.SortedDictionary`2
+        public IComparer<TKey> Comparer => mValues.Comparer;
+        //
+        // 摘要:
+        //     Gets the number of key/value pairs contained in the System.Collections.Generic.SortedDictionary`2.
+        //
+        // 返回结果:
+        //     The number of key/value pairs contained in the System.Collections.Generic.SortedDictionary`2.
+        public int Count => mCount;
+
+        //
+        // 摘要:
+        //     Adds an element with the specified key and value into the System.Collections.Generic.SortedDictionary`2.
+        //
+        // 参数:
+        //   key:
+        //     The key of the element to add.
+        //
+        //   value:
+        //     The value of the element to add. The value can be null for reference types.
+        //
+        // 异常:
+        //   T:System.ArgumentNullException:
+        //     key is null.
+        //
+        //   T:System.ArgumentException:
+        //     An element with the same key already exists in the System.Collections.Generic.SortedDictionary`2.
+        public void Add(TKey key, TValue value)
+        {
+            if (!mValues.TryGetValue(key, out List<TValue> list))
+            {
+                list = new List<TValue>();
+                mValues[key] = list;
+            }
+            list.Add(value);
+            mCount++;
+        }
+        //
+        // 摘要:
+        //     Removes all elements from the System.Collections.Generic.SortedDictionary`2.
+        public void Clear()
+        {
+            mCount = 0;
+            mValues.Clear();
+        }
+        //
+        // 摘要:
+        //     Determines whether the System.Collections.Generic.SortedDictionary`2 contains
+        //     an element with the specified key.
+        //
+        // 参数:
+        //   key:
+        //     The key to locate in the System.Collections.Generic.SortedDictionary`2.
+        //
+        // 返回结果:
+        //     true if the System.Collections.Generic.SortedDictionary`2 contains an element
+        //     with the specified key; otherwise, false.
+        //
+        // 异常:
+        //   T:System.ArgumentNullException:
+        //     key is null.
+        public bool ContainsKey(TKey key) => mValues.ContainsKey(key);
+        //
+        // 摘要:
+        //     Determines whether the System.Collections.Generic.SortedDictionary`2 contains
+        //     an element with the specified value.
+        //
+        // 参数:
+        //   value:
+        //     The value to locate in the System.Collections.Generic.SortedDictionary`2. The
+        //     value can be null for reference types.
+        //
+        // 返回结果:
+        //     true if the System.Collections.Generic.SortedDictionary`2 contains an element
+        //     with the specified value; otherwise, false.
+        public bool ContainsValue(TValue value)
+        {
+            foreach(List<TValue> values in mValues.Values)
+            {
+                if (values.Contains(value))
+                    return true;
+            }
+            return false;
+        }
+        //
+        // 摘要:
+        //     Returns an enumerator that iterates through the System.Collections.Generic.SortedDictionary`2.
+        //
+        // 返回结果:
+        //     A System.Collections.Generic.SortedDictionary`2.Enumerator for the System.Collections.Generic.SortedDictionary`2.
+        public SortedMultiDictionary<TKey, TValue>.Enumerator GetEnumerator()
+        {
+            return new Enumerator(mValues);
+        }
+        //
+        // 摘要:
+        //     Removes the element with the specified key from the System.Collections.Generic.SortedDictionary`2.
+        //
+        // 参数:
+        //   key:
+        //     The key of the element to remove.
+        //
+        // 返回结果:
+        //     true if the element is successfully removed; otherwise, false. This method also
+        //     returns false if key is not found in the System.Collections.Generic.SortedDictionary`2.
+        //
+        // 异常:
+        //   T:System.ArgumentNullException:
+        //     key is null.
+        public bool Remove(TKey key)
+        {
+            if (mValues.TryGetValue(key, out List<TValue> list))
+            {
+                mCount -= list.Count;
+                return mValues.Remove(key);
+            }
+            return false;
+        }
+        //
+        // 摘要:
+        //     Gets the value associated with the specified key.
+        //
+        // 参数:
+        //   key:
+        //     The key of the value to get.
+        //
+        //   value:
+        //     When this method returns, the value associated with the specified key, if the
+        //     key is found; otherwise, the default value for the type of the value parameter.
+        //
+        // 返回结果:
+        //     true if the System.Collections.Generic.SortedDictionary`2 contains an element
+        //     with the specified key; otherwise, false.
+        //
+        // 异常:
+        //   T:System.ArgumentNullException:
+        //     key is null.
+        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
+        {
+            if (mValues.TryGetValue(key, out List<TValue> list))
+            {
+                value = list[0];
+                return true;
+            }
+            value = default(TValue);
+            return false;
+        }
+
+        //
+        // 摘要:
+        //     Enumerates the elements of a System.Collections.Generic.SortedDictionary`2.
+        //
+        // 类型参数:
+        //   TKey:
+        //
+        //   TValue:
+        public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>, IEnumerator, IDisposable, IDictionaryEnumerator
+        {
+            SortedDictionary<TKey, List<TValue>> mValues;
+            SortedDictionary<TKey, List<TValue>>.Enumerator mEnumerator;
+            KeyValuePair<TKey, List<TValue>> mCurrentList;
+            KeyValuePair<TKey, TValue> mCurrent;
+            int mIndex;
+            int mIndex2;
+            public Enumerator(SortedDictionary<TKey, List<TValue>> values)
+            {
+                mValues = values;
+                mEnumerator = mValues.GetEnumerator();
+                mIndex = -1;
+                mIndex2 = -1;
+                mCurrentList = new KeyValuePair<TKey, List<TValue>>();
+                mCurrent = new KeyValuePair<TKey, TValue>();
+            }
+            //
+            // 摘要:
+            //     Gets the element at the current position of the enumerator.
+            //
+            // 返回结果:
+            //     The element in the System.Collections.Generic.SortedDictionary`2 at the current
+            //     position of the enumerator.
+            public KeyValuePair<TKey, TValue> Current => mCurrent;
+
+            public DictionaryEntry Entry => throw new NotImplementedException();
+
+            public object Key => mCurrent.Key;
+
+            public object Value => mCurrent.Value;
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return mCurrent;
+                }
+            }
+
+            //
+            // 摘要:
+            //     Releases all resources used by the System.Collections.Generic.SortedDictionary`2.Enumerator.
+            public void Dispose() => mEnumerator.Dispose();
+            //
+            // 摘要:
+            //     Advances the enumerator to the next element of the System.Collections.Generic.SortedDictionary`2.
+            //
+            // 返回结果:
+            //     true if the enumerator was successfully advanced to the next element; false if
+            //     the enumerator has passed the end of the collection.
+            //
+            // 异常:
+            //   T:System.InvalidOperationException:
+            //     The collection was modified after the enumerator was created.
+            public bool MoveNext()
+            {
+                if (mIndex2 < mEnumerator.Current.Value.Count)
+                {
+                    mIndex2++;
+                    mCurrent = new KeyValuePair<TKey, TValue>(mCurrentList.Key, mCurrentList.Value[mIndex2]);
+                    return true;
+                }
+                else
+                {
+                    mIndex2 = 0;
+                    bool ret = mEnumerator.MoveNext();
+                    if (ret)
+                    {
+                        mCurrentList = mEnumerator.Current;
+                        mCurrent = new KeyValuePair<TKey, TValue>(mCurrentList.Key, mCurrentList.Value[mIndex2]);
+                    }
+                    return ret;
+                }
+            }
+
+            public void Reset()
+            {
+                mIndex2 = -1;
+                mEnumerator = mValues.GetEnumerator();
+            }
+        }
+    }
+}

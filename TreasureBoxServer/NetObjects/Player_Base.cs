@@ -56,6 +56,16 @@ namespace TreasureBox
 				case "ReadMail": ReadMail(jsonData["uid"]); break;
 				case "DeleteMail": DeleteMail(jsonData["uids"]); break;
 				case "TakeMailAppendix": TakeMailAppendix(jsonData["uids"]); break;
+				case "GangGet": GangGet(); break;
+				case "GangCreate": GangCreate(jsonData["name"]); break;
+				case "GangQuit": GangQuit(); break;
+				case "GangGetList": GangGetList(jsonData["page"]); break;
+				case "GangGetApplies": GangGetApplies(); break;
+				case "GangApply": GangApply(jsonData["id"]); break;
+				case "GangApplyManager": GangApplyManager(jsonData["uid"], jsonData["accept"]); break;
+				case "GangKick": GangKick(jsonData["uid"]); break;
+				case "GangPosition": GangPosition(jsonData["uid"], jsonData["position"]); break;
+				case "GangAutoAccept": GangAutoAccept(jsonData["autoAccept"]); break;
 				case "SignInForGift": SignInForGift(); break;
 				case "SignInForGift24": SignInForGift24(); break;
 				case "SignInForGift23": SignInForGift23(); break;
@@ -76,6 +86,7 @@ namespace TreasureBox
 				case "SignInForGift3": SignInForGift3(); break;
 				case "SignInForGift2": SignInForGift2(); break;
 				case "SignInForGift1": SignInForGift1(); break;
+				case "ChangeNickname": ChangeNickname(jsonData["name"]); break;
 				default: OnMessageUnknownPacketType(jsonData); break;
 			}
 		}
@@ -86,6 +97,16 @@ namespace TreasureBox
 		public abstract void ReadMail(int uid);
 		public abstract void DeleteMail(List<int> uids);
 		public abstract void TakeMailAppendix(List<int> uids);
+		public abstract void GangGet();
+		public abstract void GangCreate(string name);
+		public abstract void GangQuit();
+		public abstract void GangGetList(int page);
+		public abstract void GangGetApplies();
+		public abstract void GangApply(int id);
+		public abstract void GangApplyManager(int uid, bool accept);
+		public abstract void GangKick(int uid);
+		public abstract void GangPosition(int uid, int position);
+		public abstract void GangAutoAccept(bool autoAccept);
 		public abstract void SignInForGift();
 		public abstract void SignInForGift24();
 		public abstract void SignInForGift23();
@@ -106,6 +127,7 @@ namespace TreasureBox
 		public abstract void SignInForGift3();
 		public abstract void SignInForGift2();
 		public abstract void SignInForGift1();
+		public abstract void ChangeNickname(string name);
 		protected virtual void OnMessageUnknownPacketType(JSONData jsonData)
 		{
 			Logger.LogError($"Player_Base : OnMessageUnknownPacketType : {jsonData}");
@@ -156,6 +178,68 @@ namespace TreasureBox
 		{
 			JSONData _data_ = _NewPacket_("CB_AccountLogin");
 			_data_["account"] = account;
+			Send(_data_);
+		}
+		public void CB_GangGet(JSONData gang, JSONData members)
+		{
+			JSONData _data_ = _NewPacket_("CB_GangGet");
+			_data_["gang"] = gang;
+			_data_["members"] = members;
+			Send(_data_);
+		}
+		public void CB_GangCreate(JSONData gang, JSONData members)
+		{
+			JSONData _data_ = _NewPacket_("CB_GangCreate");
+			_data_["gang"] = gang;
+			_data_["members"] = members;
+			Send(_data_);
+		}
+		public void CB_GangQuit() => Send(_NewPacket_("CB_GangQuit"));
+		public void CB_GangGetList(int page, int allCount, JSONData gangs)
+		{
+			JSONData _data_ = _NewPacket_("CB_GangGetList");
+			_data_["page"] = page;
+			_data_["allCount"] = allCount;
+			_data_["gangs"] = gangs;
+			Send(_data_);
+		}
+		public void CB_GangGetApplies(JSONData members)
+		{
+			JSONData _data_ = _NewPacket_("CB_GangGetApplies");
+			_data_["members"] = members;
+			Send(_data_);
+		}
+		public void CB_GangApply(int id)
+		{
+			JSONData _data_ = _NewPacket_("CB_GangApply");
+			_data_["id"] = id;
+			Send(_data_);
+		}
+		public void CB_GangApplyManager(int uid, bool accept, JSONData member)
+		{
+			JSONData _data_ = _NewPacket_("CB_GangApplyManager");
+			_data_["uid"] = uid;
+			_data_["accept"] = accept;
+			_data_["member"] = member;
+			Send(_data_);
+		}
+		public void CB_GangKick(int uid)
+		{
+			JSONData _data_ = _NewPacket_("CB_GangKick");
+			_data_["uid"] = uid;
+			Send(_data_);
+		}
+		public void CB_GangPosition(int uid, int position)
+		{
+			JSONData _data_ = _NewPacket_("CB_GangPosition");
+			_data_["uid"] = uid;
+			_data_["position"] = position;
+			Send(_data_);
+		}
+		public void CB_GangAutoAccept(bool autoAccept)
+		{
+			JSONData _data_ = _NewPacket_("CB_GangAutoAccept");
+			_data_["autoAccept"] = autoAccept;
 			Send(_data_);
 		}
 		#endregion //Process packet send to client

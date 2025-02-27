@@ -95,6 +95,13 @@ namespace TreasureBox
 				_param_.Value = _attribute_.vipExp;
 				_ps_.Add(_param_);
 			}
+			if (HasUpdate(2048ul))//UpdateMask.gangIdMask)
+			{
+				_sb_.Append("`gangId` = @gangId,");
+				_param_ = new MySqlParameter("@gangId", MySqlDbType.Int32);
+				_param_.Value = _attribute_.gangId;
+				_ps_.Add(_param_);
+			}
 			_waitingUpdate_ = false;
 			ClearUpdateMask();
 			if (_ps_.Count > 0)
@@ -131,6 +138,7 @@ namespace TreasureBox
 			_attribute_.vp = Convert.ToInt32(data["vp"]);
 			_attribute_.vpTime = Convert2DateTime(data["vpTime"]);
 			_attribute_.vipExp = Convert.ToInt32(data["vipExp"]);
+			_attribute_.gangId = Convert.ToInt32(data["gangId"]);
 			RegisterSync();
 		}
 		/// <summary>
@@ -216,7 +224,7 @@ namespace TreasureBox
 		/// Insert into database. The insert operation run in background thread. The callback occur after insert into database. (All params)
 		/// </summary>
 		/// <param name="_callback_">This callback occur after database operation done. You can ignore it if you don't care about the callback.</param>
-		public static void Insert(int acctType, string name, DateTime createTime, string nickname, int icon, int money, int diamond, DateTime lastLoginTime, int lv, int exp, int vp, DateTime vpTime, int vipExp, Action<Account, string> _callback_ = null)
+		public static void Insert(int acctType, string name, DateTime createTime, string nickname, int icon, int money, int diamond, DateTime lastLoginTime, int lv, int exp, int vp, DateTime vpTime, int vipExp, int gangId, Action<Account, string> _callback_ = null)
 		{
 			List<MySqlParameter> _ps_ = new List<MySqlParameter>();
 			MySqlParameter _param_;
@@ -259,7 +267,10 @@ namespace TreasureBox
 			_param_ = new MySqlParameter("@vipExp", MySqlDbType.Int32);
 			_param_.Value = vipExp;
 			_ps_.Add(_param_);
-			Insert("INSERT INTO `Account` (`acctType`,`name`,`createTime`,`nickname`,`icon`,`money`,`diamond`,`lastLoginTime`,`lv`,`exp`,`vp`,`vpTime`,`vipExp`) VALUES (@acctType,@name,@createTime,@nickname,@icon,@money,@diamond,@lastLoginTime,@lv,@exp,@vp,@vpTime,@vipExp)",
+			_param_ = new MySqlParameter("@gangId", MySqlDbType.Int32);
+			_param_.Value = gangId;
+			_ps_.Add(_param_);
+			Insert("INSERT INTO `Account` (`acctType`,`name`,`createTime`,`nickname`,`icon`,`money`,`diamond`,`lastLoginTime`,`lv`,`exp`,`vp`,`vpTime`,`vipExp`,`gangId`) VALUES (@acctType,@name,@createTime,@nickname,@icon,@money,@diamond,@lastLoginTime,@lv,@exp,@vp,@vpTime,@vipExp,@gangId)",
 				_ps_,
 				(_lastInsertedId_, _error_) =>
 				{
@@ -281,10 +292,10 @@ namespace TreasureBox
 						_account_._attribute_.vp = vp;
 						_account_._attribute_.vpTime = vpTime;
 						_account_._attribute_.vipExp = vipExp;
+						_account_._attribute_.gangId = gangId;
 						_account_.RegisterSync();
 					}
-					if (_callback_ != null)
-						_callback_(_account_, _error_);
+					_callback_?.Invoke(_account_, _error_);
 				});
 		}
 		/// <summary>
@@ -318,8 +329,7 @@ namespace TreasureBox
 						_account_._attribute_.nickname = nickname;
 						_account_.RegisterSync();
 					}
-					if (_callback_ != null)
-						_callback_(_account_, _error_);
+					_callback_?.Invoke(_account_, _error_);
 				});
 		}
 
@@ -477,7 +487,7 @@ namespace TreasureBox
 		{
 			int _uid_ = _attribute_.uid;
 			Func<int, PlayerBase> _getPlayer_ = GetPlayer();
-			int _count_ = 3;
+			int _count_ = 5;
 			Mail.SelectByAcctId(_uid_, (mails, error) =>
 			{
 				if (string.IsNullOrEmpty(error))
@@ -546,11 +556,12 @@ namespace TreasureBox
 			vpMask = 256ul,
 			vpTimeMask = 512ul,
 			vipExpMask = 1024ul,
-			AllMask_ = 2047ul
+			gangIdMask = 2048ul,
+			AllMask_ = 4095ul
 		};
 
 		[KissJsonDontSerialize]
-		protected override ulong DefaultSendMask => 2047ul;
+		protected override ulong DefaultSendMask => 4095ul;
 		[KissJsonSerializeProperty]
 		public int uid
 		{
@@ -569,6 +580,7 @@ namespace TreasureBox
 			get => _attribute_.name; 
 			set
 			{
+				if (_attribute_.name == value) return;
 				_attribute_.name = value;
 				MarkUpdateAndModifyMask(1ul);//UpdateMask.uidMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -587,6 +599,7 @@ namespace TreasureBox
 			get => _attribute_.nickname; 
 			set
 			{
+				if (_attribute_.nickname == value) return;
 				_attribute_.nickname = value;
 				MarkUpdateAndModifyMask(2ul);//UpdateMask.nicknameMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -605,6 +618,7 @@ namespace TreasureBox
 			get => _attribute_.money; 
 			set
 			{
+				if (_attribute_.money == value) return;
 				_attribute_.money = value;
 				MarkUpdateAndModifyMask(8ul);//UpdateMask.moneyMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -617,6 +631,7 @@ namespace TreasureBox
 			get => _attribute_.diamond; 
 			set
 			{
+				if (_attribute_.diamond == value) return;
 				_attribute_.diamond = value;
 				MarkUpdateAndModifyMask(16ul);//UpdateMask.diamondMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -629,6 +644,7 @@ namespace TreasureBox
 			get => _attribute_.lastLoginTime; 
 			set
 			{
+				if (_attribute_.lastLoginTime == value) return;
 				_attribute_.lastLoginTime = value;
 				MarkUpdateAndModifyMask(32ul);//UpdateMask.lastLoginTimeMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -641,6 +657,7 @@ namespace TreasureBox
 			get => _attribute_.lv; 
 			set
 			{
+				if (_attribute_.lv == value) return;
 				_attribute_.lv = value;
 				MarkUpdateAndModifyMask(64ul);//UpdateMask.lvMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -653,6 +670,7 @@ namespace TreasureBox
 			get => _attribute_.exp; 
 			set
 			{
+				if (_attribute_.exp == value) return;
 				_attribute_.exp = value;
 				MarkUpdateAndModifyMask(128ul);//UpdateMask.expMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -665,6 +683,7 @@ namespace TreasureBox
 			get => _attribute_.vp; 
 			set
 			{
+				if (_attribute_.vp == value) return;
 				_attribute_.vp = value;
 				MarkUpdateAndModifyMask(256ul);//UpdateMask.vpMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -677,6 +696,7 @@ namespace TreasureBox
 			get => _attribute_.vpTime; 
 			set
 			{
+				if (_attribute_.vpTime == value) return;
 				_attribute_.vpTime = value;
 				MarkUpdateAndModifyMask(512ul);//UpdateMask.vpTimeMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -689,8 +709,22 @@ namespace TreasureBox
 			get => _attribute_.vipExp; 
 			set
 			{
+				if (_attribute_.vipExp == value) return;
 				_attribute_.vipExp = value;
 				MarkUpdateAndModifyMask(1024ul);//UpdateMask.vipExpMask
+				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
+				SyncToClient("account");
+			}
+		}
+		[KissJsonSerializeProperty]
+		public int gangId
+		{
+			get => _attribute_.gangId; 
+			set
+			{
+				if (_attribute_.gangId == value) return;
+				_attribute_.gangId = value;
+				MarkUpdateAndModifyMask(2048ul);//UpdateMask.gangIdMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
 				SyncToClient("account");
 			}
@@ -733,6 +767,8 @@ namespace TreasureBox
 				_jsonData_["vpTime"] = _attribute_.vpTime;
 			if ((mask & 1024ul) > 0)//UpdateMask.vipExpMask
 				_jsonData_["vipExp"] = _attribute_.vipExp;
+			if ((mask & 2048ul) > 0)//UpdateMask.gangIdMask
+				_jsonData_["gangId"] = _attribute_.gangId;
 
 			_jsonData_["_uid_"] = _uid_;
 			_jsonData_["_sendMask_"] = mask;
@@ -772,6 +808,8 @@ namespace TreasureBox
 				vpTime = _source_.vpTime;
 			if ((_mask_ & 1024ul) > 0)//UpdateMask.vipExpMask
 				vipExp = _source_.vipExp;
+			if ((_mask_ & 2048ul) > 0)//UpdateMask.gangIdMask
+				gangId = _source_.gangId;
 
 		}
 		#endregion //JSON
@@ -815,6 +853,9 @@ namespace TreasureBox
 
 			// vipExp
 			public int vipExp;
+
+			// gangId
+			public int gangId;
 
 		}
 		[KissJsonDontSerialize]

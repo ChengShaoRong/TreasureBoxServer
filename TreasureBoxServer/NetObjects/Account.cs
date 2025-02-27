@@ -107,6 +107,20 @@ namespace TreasureBox
                 Framework.CancelEvent(offlineEventKey);
                 offlineEventKey = "";
             }
+
+            if (GangManager.IsGangInited)
+            {
+                GangMember member = GangManager.GetGangMemberById(uid);
+                if (member != null)
+                {
+                    member.online = true;
+                    if (member.gangId != gangId)
+                    {
+                        gang?.members.Remove(uid);
+                        gangId = member.gangId;
+                    }
+                }
+            }
         }
         /// <summary>
         /// Process your custom action when account offline
@@ -120,6 +134,16 @@ namespace TreasureBox
                     AccountManager.Instance.ClearAccountCache(this);
 
                 }, Framework.config.accountCacheTime, 1);
+
+            if (GangManager.IsGangInited)
+            {
+                GangMember member = GangManager.GetGangMemberById(uid);
+                if (member != null)
+                {
+                    member.offline = DateTime.Now;
+                    member.online = false;
+                }
+            }
         }
 
         /// <summary>
@@ -177,7 +201,7 @@ namespace TreasureBox
             }
             return true;
         }
-#if FREE_VERSION//We recommend set `appendix` type in NotObject `Mail` as `Dictionary<int, int>` in C#Like, but must set as `string` in C#LikeFree.
+//#if FREE_VERSION//We recommend set `appendix` type in NotObject `Mail` as `Dictionary<int, int>` in C#Like, but must set as `string` in C#LikeFree.
         /// <summary>
         /// Send mail to player
         /// </summary>
@@ -214,32 +238,32 @@ namespace TreasureBox
                         Logger.LogError(error);
                 });
         }
-#else
-        /// <summary>
-        /// Send mail to player
-        /// </summary>
-        /// <param name="title">mail title</param>
-        /// <param name="content">mail content</param>
-        /// <param name="appendix">multiple item for mail appendix, the key is item id and the value is item count, default value is null</param>
-        /// <param name="senderId">sender uid, default is 0</param>
-        /// <param name="senderName">sender name, default is 'System'</param>
-        public void SendMail(string title, string content, Dictionary<int, int> appendix = null, int senderId = 0, string senderName = "System")
-        {
-            //Insert into database
-            Mail.Insert(uid, senderId, senderName, title, content, appendix, DateTime.Now, 0, 0,
-                (mail, error) =>//callback from database
-                {
-                    if (string.IsNullOrEmpty(error))
-                    {
-                        //Sync to client after inserted into database
-                        SetMails(new List<Mail>() { mail });
-                        LogManager.LogMail(uid, 0, appendix, content, title);//You may don't need log this.
-                    }
-                    else
-                        Logger.LogError(error);
-                });
-        }
-#endif
+//#else
+//        /// <summary>
+//        /// Send mail to player
+//        /// </summary>
+//        /// <param name="title">mail title</param>
+//        /// <param name="content">mail content</param>
+//        /// <param name="appendix">multiple item for mail appendix, the key is item id and the value is item count, default value is null</param>
+//        /// <param name="senderId">sender uid, default is 0</param>
+//        /// <param name="senderName">sender name, default is 'System'</param>
+//        public void SendMail(string title, string content, Dictionary<int, int> appendix = null, int senderId = 0, string senderName = "System")
+//        {
+//            //Insert into database
+//            Mail.Insert(uid, senderId, senderName, title, content, appendix, DateTime.Now, 0, 0,
+//                (mail, error) =>//callback from database
+//                {
+//                    if (string.IsNullOrEmpty(error))
+//                    {
+//                        //Sync to client after inserted into database
+//                        SetMails(new List<Mail>() { mail });
+//                        LogManager.LogMail(uid, 0, appendix, content, title);//You may don't need log this.
+//                    }
+//                    else
+//                        Logger.LogError(error);
+//                });
+//        }
+//#endif
         /// <summary>
         /// Send mail to player
         /// </summary>
@@ -276,7 +300,7 @@ namespace TreasureBox
             foreach(int uid in uids)
             {
                 Mail mail = GetMail(uid);
-#if FREE_VERSION//We recommend set `appendix` type in NotObject `Mail` as `Dictionary<int, int>` in C#Like, but must set as `string` in C#LikeFree.
+//#if FREE_VERSION//We recommend set `appendix` type in NotObject `Mail` as `Dictionary<int, int>` in C#Like, but must set as `string` in C#LikeFree.
                 if (mail != null && mail.received == 0 && mail.Appendix.Count > 0)
                 {
                     foreach (var appendix in mail.Appendix)
@@ -290,21 +314,21 @@ namespace TreasureBox
                     if (mail.wasRead == 0)
                         mail.wasRead = 1;
                 }
-#else
-                if (mail != null && mail.received == 0 && mail.appendix.Count > 0)
-                {
-                    foreach (var appendix in mail.appendix)
-                    {
-                        if (appendixs.ContainsKey(appendix.Key))//merge count
-                            appendixs[appendix.Key] += appendix.Value;
-                        else
-                            appendixs[appendix.Key] = appendix.Value;
-                    }
-                    mail.received = 1;
-                    if (mail.wasRead == 0)
-                        mail.wasRead = 1;
-                }
-#endif
+//#else
+//                if (mail != null && mail.received == 0 && mail.appendix.Count > 0)
+//                {
+//                    foreach (var appendix in mail.appendix)
+//                    {
+//                        if (appendixs.ContainsKey(appendix.Key))//merge count
+//                            appendixs[appendix.Key] += appendix.Value;
+//                        else
+//                            appendixs[appendix.Key] = appendix.Value;
+//                    }
+//                    mail.received = 1;
+//                    if (mail.wasRead == 0)
+//                        mail.wasRead = 1;
+//                }
+//#endif
             }
             CB_GetReward(appendixs);
         }
@@ -381,7 +405,7 @@ namespace TreasureBox
         {
             if (signIn == null)
             {
-                player.CB_Tips("LT_Tips_SignInNull", true);
+                player.CB_Tips("LT_Tips_SignInNull");
                 return;
             }
             signIn.GetReward(player);
@@ -394,5 +418,7 @@ namespace TreasureBox
             get;
             set;
         }
+
+        public Gang gang => GangManager.GetGangById(gangId);
     }
 }

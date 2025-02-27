@@ -150,8 +150,7 @@ namespace TreasureBox
 						_signIn_._attribute_.month = month;
 						_signIn_._attribute_.signInList = signInList;
 					}
-					if (_callback_ != null)
-						_callback_(_signIn_, _error_);
+					_callback_?.Invoke(_signIn_, _error_);
 				});
 		}
 		/// <summary>
@@ -175,8 +174,7 @@ namespace TreasureBox
 						_signIn_ = new SignIn();
 						_signIn_._attribute_.acctId = acctId;
 					}
-					if (_callback_ != null)
-						_callback_(_signIn_, _error_);
+					_callback_?.Invoke(_signIn_, _error_);
 				});
 		}
 
@@ -206,6 +204,7 @@ namespace TreasureBox
 			get => _attribute_.month; 
 			set
 			{
+				if (_attribute_.month == value) return;
 				_attribute_.month = value;
 				MarkUpdateAndModifyMask(2ul);//UpdateMask.monthMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -218,6 +217,7 @@ namespace TreasureBox
 			get => _attribute_.signInList; 
 			set
 			{
+				if (_attribute_.signInList == value) return;
 				_attribute_.signInList = value;
 				MarkUpdateAndModifyMask(4ul);//UpdateMask.signInListMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);

@@ -63,6 +63,9 @@ namespace TreasureBox
         //}
         #endregion//Override WebSocket/Socket action
 
+        public void CB_Tips(string tips) => CB_Tips(tips, true);
+        public void CB_Error(string error) => CB_Error(error, true);
+
         #region Override packet received from client
         public override void AccountLogin(string name, int acctType, string password)
         {
@@ -178,6 +181,75 @@ namespace TreasureBox
         public override void SignInForGift1()
         {
             throw new NotImplementedException();
+        }
+
+        public override void GangGet()
+        {
+            GangManager.GangGet(this);
+        }
+
+        public override void GangCreate(string name)
+        {
+            GangManager.GangCreate(this, name);
+        }
+
+        public override void GangQuit()
+        {
+            GangManager.GangQuit(this);
+        }
+
+        public override void GangGetList(int page)
+        {
+            GangManager.GangGetList(this, page);
+        }
+
+        public override void GangGetApplies()
+        {
+            GangManager.GangGetApplies(this);
+        }
+
+        public override void GangApply(int id)
+        {
+            GangManager.GangApply(this, id);
+        }
+
+        public override void GangApplyManager(int uid, bool accept)
+        {
+            GangManager.GangApplyManager(this, uid, accept);
+        }
+
+        public override void GangKick(int uid)
+        {
+            GangManager.GangKick(this, uid);
+        }
+
+        public override void GangPosition(int uid, int position)
+        {
+            GangManager.GangPosition(this, uid, position);
+        }
+
+        public override void GangAutoAccept(bool autoAccept)
+        {
+            GangManager.GangAutoAccept(this, autoAccept);
+        }
+
+        public override void ChangeNickname(string name)
+        {
+            if (name.Length >= 3 && name.Length <= 12)
+            {
+                account.nickname = name;
+                GangMember gangMember = GangManager.GetGangMemberById(account.uid);
+                if (gangMember != null)
+                {
+                    gangMember.name = name;
+                    if (gangMember.position == (int)GangMember.Position.Leader)
+                    {
+                        Gang gang = account.gang;
+                        if (gang != null)
+                            gang.leaderName = name;
+                    }
+                }
+            }
         }
         #endregion //Override packet received from client
     }

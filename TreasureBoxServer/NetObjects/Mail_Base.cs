@@ -204,8 +204,7 @@ namespace TreasureBox
 						_mail_._attribute_.wasRead = wasRead;
 						_mail_._attribute_.received = received;
 					}
-					if (_callback_ != null)
-						_callback_(_mail_, _error_);
+					_callback_?.Invoke(_mail_, _error_);
 				});
 		}
 		/// <summary>
@@ -254,8 +253,7 @@ namespace TreasureBox
 						_mail_._attribute_.appendix = appendix;
 						_mail_._attribute_.createTime = createTime;
 					}
-					if (_callback_ != null)
-						_callback_(_mail_, _error_);
+					_callback_?.Invoke(_mail_, _error_);
 				});
 		}
 
@@ -326,6 +324,7 @@ namespace TreasureBox
 			get => _attribute_.wasRead; 
 			set
 			{
+				if (_attribute_.wasRead == value) return;
 				_attribute_.wasRead = value;
 				MarkUpdateAndModifyMask(2ul);//UpdateMask.wasReadMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -338,6 +337,7 @@ namespace TreasureBox
 			get => _attribute_.received; 
 			set
 			{
+				if (_attribute_.received == value) return;
 				_attribute_.received = value;
 				MarkUpdateAndModifyMask(2ul);//UpdateMask.wasReadMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);

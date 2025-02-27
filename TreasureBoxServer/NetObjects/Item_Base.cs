@@ -181,8 +181,7 @@ namespace TreasureBox
 						_item_._attribute_.testList = _testList;
 						_item_._attribute_.testDic = _testDic;
 					}
-					if (_callback_ != null)
-						_callback_(_item_, _error_);
+					_callback_?.Invoke(_item_, _error_);
 				});
 		}
 		/// <summary>
@@ -215,8 +214,7 @@ namespace TreasureBox
 						_item_._attribute_.acctId = acctId;
 						_item_._attribute_.count = count;
 					}
-					if (_callback_ != null)
-						_callback_(_item_, _error_);
+					_callback_?.Invoke(_item_, _error_);
 				});
 		}
 
@@ -258,6 +256,7 @@ namespace TreasureBox
 			get => _attribute_.count; 
 			set
 			{
+				if (_attribute_.count == value) return;
 				_attribute_.count = value;
 				MarkUpdateAndModifyMask(2ul);//UpdateMask.countMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -271,6 +270,7 @@ namespace TreasureBox
 			get => _attribute_.testList; 
 			set
 			{
+				if (_attribute_.testList == value) return;
 				_attribute_.testList = value;
 				MarkUpdateAndModifyMask(4ul);//UpdateMask.testListMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -284,7 +284,7 @@ namespace TreasureBox
 		{
 			get
 			{
-				if (_testList == null) __testList = NetObjectUtils.StringToList<int>(_testList);
+				if (__testList == null) __testList = NetObjectUtils.StringToList<int>(_testList);
 				return __testList;
 			}
 			set
@@ -308,6 +308,7 @@ namespace TreasureBox
 			get => _attribute_.testDic; 
 			set
 			{
+				if (_attribute_.testDic == value) return;
 				_attribute_.testDic = value;
 				MarkUpdateAndModifyMask(4ul);//UpdateMask.testListMask
 				if (SyncToDB) AsyncDatabaseManager.UpdateDelayInBackgroundThread(this);
@@ -321,7 +322,7 @@ namespace TreasureBox
 		{
 			get
 			{
-				if (_testDic == null) __testDic = NetObjectUtils.StringToDictionary<int,bool>(_testDic);
+				if (__testDic == null) __testDic = NetObjectUtils.StringToDictionary<int,bool>(_testDic);
 				return __testDic;
 			}
 			set
@@ -330,25 +331,18 @@ namespace TreasureBox
 				testDicMarkChanged();
 			}
 		}
-		public bool testDicGet(int _key_, bool _default_ = true)
-		{
-			return testDic.TryGetValue(_key_, out bool _value_) ? _value_ : _default_;
-		}
+		public bool testDicGet(int _key_, bool _default_ = true) => testDic.TryGetValue(_key_, out bool _value_) ? _value_ : _default_;
 		public void testDicSet(int _key_, bool _value_, bool _default_ = true)
 		{
-			if (testDic.TryGetValue(_key_, out bool _value_old_) && _value_old_ == _default_)
-				testDic.Remove(_key_);
-			else
-				testDic[_key_] = _value_;
+			if (_value_ == _default_) { if (!testDic.Remove(_key_)) return; }
+			else if (testDic.TryGetValue(_key_, out bool _value_old_) && _value_old_ == _value_) return;
+			else testDic[_key_] = _value_;
 			testDicMarkChanged();
 		}
 		/// <summary>
 		///Call this function after you modified testDic (e.g. insert/add/remove/clear operation.). 
 		/// <summary>
-		public void testDicMarkChanged()
-		{
-			_testDic = NetObjectUtils.DictionaryToString(testDic);
-		}
+		public void testDicMarkChanged() => _testDic = NetObjectUtils.DictionaryToString(__testDic);
 		#endregion Property_testDic
 		#endregion //Property
 

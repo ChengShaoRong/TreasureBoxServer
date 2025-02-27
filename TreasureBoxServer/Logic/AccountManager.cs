@@ -316,7 +316,7 @@ namespace TreasureBox
                     {
                         DateTime dtNow = DateTime.Now;
                         Account.Insert(acctType, name, dtNow,
-                            "Guest" + FrameworkBase.GetRand(100000), 1, 0, 0, dtNow, 1, 0, 120, dtNow,0,
+                            "Guest" + FrameworkBase.GetRand(100000), 1, 0, 0, dtNow, 1, 0, 120, dtNow,0,0,
                             (newAccount, error) =>
                             {
                                 //select account occur error
@@ -369,6 +369,7 @@ namespace TreasureBox
             LogManager.LogAccount(account.uid, 0, player.IP);
 
             account.LastLoginTime = account.lastLoginTime;
+            account.OnOnline();
 
             //Process the first time account login.
             if (bCreate)
