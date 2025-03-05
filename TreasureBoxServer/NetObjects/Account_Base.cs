@@ -487,7 +487,7 @@ namespace TreasureBox
 		{
 			int _uid_ = _attribute_.uid;
 			Func<int, PlayerBase> _getPlayer_ = GetPlayer();
-			int _count_ = 5;
+			int _count_ = 3;
 			Mail.SelectByAcctId(_uid_, (mails, error) =>
 			{
 				if (string.IsNullOrEmpty(error))
