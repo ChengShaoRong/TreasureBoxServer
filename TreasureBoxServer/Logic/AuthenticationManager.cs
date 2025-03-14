@@ -565,7 +565,7 @@ namespace TreasureBox
                         {
                             GetAuthentication(name, (authentication, errorCode) =>
                             {
-                                if (errorCode == ErrorCode.Success)
+                                if (errorCode == ErrorCode.FailNotExist)
                                 {
                                     DateTime dtNow = DateTime.Now;
                                     authenticationGuest.LoginName = name;
@@ -577,6 +577,12 @@ namespace TreasureBox
                                     authenticationGuest.cacheTime = dtNow.AddHours(24);
                                     ret["uid"] = authenticationGuest.uid;
                                     ret["token"] = authenticationGuest.token;
+                                }
+                                else if (errorCode == ErrorCode.Success)
+                                {
+                                    errorCode = ErrorCode.FailLoginNameExist;
+                                    ret["code"] = (int)errorCode;
+                                    ret["error"] = "LT_Auth_" + errorCode;
                                 }
                                 else
                                 {
