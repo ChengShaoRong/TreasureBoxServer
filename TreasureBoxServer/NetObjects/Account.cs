@@ -399,7 +399,23 @@ namespace TreasureBox
             return true;
         }
 
-        public int Vip => VipCsv.GetVip(vipExp);
+        public int Vip
+        {
+            get
+            {
+                if (exp == 0)
+                    return 0;
+                int vip = 0;
+                foreach (string key in VipJSON.GetKeys())
+                {
+                    VipJSON csv = VipJSON.GetByKey(key);
+                    if (exp < csv.exp)
+                        return vip;
+                    vip = csv.vip;
+                }
+                return vip;
+            }
+        }
 
         public void SignInForGift(Player player)
         {

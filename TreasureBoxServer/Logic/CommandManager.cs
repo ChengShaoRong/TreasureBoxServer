@@ -36,9 +36,9 @@ namespace TreasureBox
             Logger.LogInfo($"TestComman {param1} {param2} {param3} {param4}");
         }
         [CommandMethod]
-        public static void ReloadCsv()
+        public static void ReloadJson()
         {
-            Framework.Instance.InitializeCSV();
+            Framework.Instance.InitializeJSON();
         }
         [CommandMethod]
         public static void Quit()

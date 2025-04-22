@@ -28,8 +28,22 @@ namespace TreasureBox
 			}
 			mSignInDays.Add(day);
 			signInList = Global.ListToString(mSignInDays);//This step will save to DB and sync to client in background thread
-			Dictionary<int, int> items = SignInCsv.Get(day).GetReward(player.account.Vip);
+			Dictionary<int, int> items = GetReward(day, player.account.Vip);
 			player.account.CB_GetReward(items, LogManagerEnum.LogItemType.SignIn);
+		}
+
+		public Dictionary<int, int> GetReward(int day, int vip)
+		{
+			Dictionary<int, int> items = new Dictionary<int, int>();
+			SignInJSON json = SignInJSON.Get(day);
+			if (json != null)
+			{
+				if (json.vip > 0 && json.vip <= vip)
+					items[json.itemId] = json.itemCount * 10;
+				else
+					items[json.itemId] = json.itemCount;
+			}
+			return items;
 		}
 	}
 }

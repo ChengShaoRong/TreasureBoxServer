@@ -61,7 +61,7 @@ namespace KissServerFramework
         /// <summary>
         /// Default language
         /// </summary>
-        public string Language = "CN";
+        public string Language = "zh";
         /// <summary>
         /// How many hours do the log file keep in './Log/*.log'. Check it in every 1 hour.
         /// </summary>

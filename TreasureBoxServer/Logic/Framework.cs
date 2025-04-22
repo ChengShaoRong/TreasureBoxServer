@@ -35,17 +35,19 @@ namespace TreasureBox
             return jsonData.ToJson();
         }
         /// <summary>
-        /// Initialize CSV file, that run before OnStart.
-        /// You can call this function by yourself to reload them if your CSV file was moidfied and need to be reload.
+        /// Initialize JSON file, that run before OnStart.
+        /// You can call this function by yourself to reload them if your JSON file was moidfied and need to be reload.
         /// </summary>
-        public override void InitializeCSV()
+        public override void InitializeJSON()
         {
-            Logger.LogInfo("Framework:InitializeCSV");
-            ItemCsv.Init();
-            SignInCsv.Init();
-            ExpCsv.Init();
-            VipCsv.Init();
-            CharacterCsv.Init();
+            Logger.LogInfo("Framework:InitializeJSON, You can call `XxxxJSON.InitializeSynchronous()` here manually. It's option, if you don't do that it'll call it automatically when you use that JSON.");
+
+            ItemJSON.InitializeSynchronous();
+            SignInJSON.InitializeSynchronous();
+            ExpJSON.InitializeSynchronous();
+            VipJSON.InitializeSynchronous();
+            CharacterJSON.InitializeSynchronous();
+            ServerListJSON.InitializeSynchronous();
 
             ServerListManager.LoadServerState();
             ServerNoticeManager.LoadServerNotice();
@@ -117,12 +119,12 @@ namespace TreasureBox
 
             GangManager.Init();
 
-            Dictionary<int, DateTime> ttt = new Dictionary<int, DateTime>();
-            ttt[1] = DateTime.Now;
-            ttt[2] = DateTime.Now.AddHours(1);
-            string str = NetObjectUtils.DictionaryToString(ttt);
-            Dictionary<int, DateTime> ttt2 = NetObjectUtils.StringToDictionary<int, DateTime>(str);
-            str = NetObjectUtils.DictionaryToString(ttt2);
+            //This an example for how to query the whole JSON file
+            foreach (string key in ServerListJSON.GetKeys())
+            {
+                ServerListJSON json = ServerListJSON.GetByKey(key);
+                Logger.LogInfo($"ServerListJSON:id={json.id},name={json.Name},webSocket={json.webSocket},socketIp={json.socketIp},socketPort={json.socketPort}");
+            }
         }
         void DeleteLogs()
         {
